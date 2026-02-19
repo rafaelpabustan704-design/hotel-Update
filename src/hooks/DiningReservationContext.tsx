@@ -14,19 +14,16 @@ const DiningReservationContext = createContext<DiningReservationContextType | un
 export function DiningReservationProvider({ children }: { children: ReactNode }) {
   const [diningReservations, setDiningReservations] = useState<DiningReservation[]>([]);
 
-  // Hydrate from localStorage after mount to avoid SSR mismatch
   useEffect(() => {
-    const stored = localStorage.getItem('hotel-dining-reservations');
-    if (stored) {
-      setDiningReservations(JSON.parse(stored));
-    }
+    fetch('/api/dining-reservations')
+      .then((res) => res.json())
+      .then((data) => setDiningReservations(data))
+      .catch(() => {});
   }, []);
 
   const addDiningReservation = useCallback(
     (data: Omit<DiningReservation, 'id' | 'createdAt'>) => {
-      // Explicitly pick only primitive fields to prevent DOM references leaking in
-      const newReservation: DiningReservation = {
-        id: crypto.randomUUID(),
+      const body = {
         fullName: String(data.fullName ?? ''),
         email: String(data.email ?? ''),
         phone: String(data.phone ?? ''),
@@ -36,24 +33,29 @@ export function DiningReservationProvider({ children }: { children: ReactNode })
         adults: Number(data.adults) || 0,
         children: Number(data.children) || 0,
         specialRequests: String(data.specialRequests ?? ''),
-        createdAt: new Date().toISOString(),
       };
-      setDiningReservations((prev) => {
-        const updated = [...prev, newReservation];
-        localStorage.setItem('hotel-dining-reservations', JSON.stringify(updated));
-        return updated;
-      });
+
+      fetch('/api/dining-reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((created: DiningReservation) => {
+          setDiningReservations((prev) => [...prev, created]);
+        })
+        .catch(() => {});
     },
     [],
   );
 
   const deleteDiningReservation = useCallback(
     (id: string) => {
-      setDiningReservations((prev) => {
-        const updated = prev.filter((r) => r.id !== id);
-        localStorage.setItem('hotel-dining-reservations', JSON.stringify(updated));
-        return updated;
-      });
+      fetch(`/api/dining-reservations/${id}`, { method: 'DELETE' })
+        .then(() => {
+          setDiningReservations((prev) => prev.filter((r) => r.id !== id));
+        })
+        .catch(() => {});
     },
     [],
   );

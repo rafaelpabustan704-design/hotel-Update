@@ -23,7 +23,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased bg-white dark:bg-dark-bg text-hotel-900 dark:text-hotel-100 transition-colors">
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

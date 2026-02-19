@@ -36,13 +36,13 @@ export default function Hero({ onBookNow, onReserveTable }: HeroProps) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onBookNow}
-            className="rounded-full bg-gold-600 px-10 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-2xl shadow-gold-600/30 transition-all hover:bg-gold-500 hover:-translate-y-1 hover:shadow-gold-500/40 active:translate-y-0"
+            className="rounded-full bg-gold-600 px-10 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-2xl shadow-gold-600/30 transition-all hover:bg-gold-500 hover:-translate-y-1 hover:shadow-gold-500/40 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             Reserve Your Stay
           </button>
           <button
             onClick={() => onReserveTable()}
-            className="rounded-full border-2 border-white/30 px-10 py-4 text-sm font-bold uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/50"
+            className="rounded-full border-2 border-white/30 px-10 py-4 text-sm font-bold uppercase tracking-wider text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             Reserve a Table
           </button>

@@ -4,32 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 
 export interface AdminAccount {
   id: string;
+  fullName: string;
+  email: string;
   username: string;
   password: string;
   createdAt: string;
 }
 
 const AUTH_KEY = 'hotel-admin-auth';
-const ACCOUNTS_KEY = 'hotel-admin-accounts';
-
-const DEFAULT_ACCOUNT: AdminAccount = {
-  id: 'default-admin',
-  username: 'admin',
-  password: 'admin',
-  createdAt: new Date().toISOString(),
-};
-
-function getAccounts(): AdminAccount[] {
-  if (typeof window === 'undefined') return [DEFAULT_ACCOUNT];
-  const stored = localStorage.getItem(ACCOUNTS_KEY);
-  if (stored) {
-    const accounts: AdminAccount[] = JSON.parse(stored);
-    return accounts.length > 0 ? accounts : [DEFAULT_ACCOUNT];
-  }
-  // Initialize with default account
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify([DEFAULT_ACCOUNT]));
-  return [DEFAULT_ACCOUNT];
-}
 
 export function useAdminAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -37,29 +19,38 @@ export function useAdminAuth() {
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  // Check auth & load accounts on mount
   useEffect(() => {
     const stored = sessionStorage.getItem(AUTH_KEY);
     if (stored) {
       setIsAuthenticated(true);
       setCurrentUser(stored);
     }
-    setAccounts(getAccounts());
-    setIsLoading(false);
+
+    fetch('/api/admin/accounts')
+      .then((res) => res.json())
+      .then((data) => setAccounts(data))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, []);
 
-  const login = useCallback((username: string, password: string): boolean => {
-    const allAccounts = getAccounts();
-    const match = allAccounts.find(
-      (a) => a.username === username && a.password === password,
-    );
-    if (match) {
-      sessionStorage.setItem(AUTH_KEY, match.username);
-      setIsAuthenticated(true);
-      setCurrentUser(match.username);
-      return true;
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        sessionStorage.setItem(AUTH_KEY, data.username);
+        setIsAuthenticated(true);
+        setCurrentUser(data.username);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-    return false;
   }, []);
 
   const logout = useCallback(() => {
@@ -68,43 +59,45 @@ export function useAdminAuth() {
     setCurrentUser(null);
   }, []);
 
-  const addAccount = useCallback((username: string, password: string): { success: boolean; error?: string } => {
-    const allAccounts = getAccounts();
-    if (allAccounts.some((a) => a.username.toLowerCase() === username.toLowerCase())) {
-      return { success: false, error: 'Username already exists' };
+  const addAccount = useCallback(async (data: { fullName: string; email: string; username: string; password: string }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/admin/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        return { success: false, error: result.error };
+      }
+      setAccounts((prev) => [...prev, result]);
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Network error' };
     }
-    if (username.length < 3) {
-      return { success: false, error: 'Username must be at least 3 characters' };
-    }
-    if (password.length < 4) {
-      return { success: false, error: 'Password must be at least 4 characters' };
-    }
-    const newAccount: AdminAccount = {
-      id: crypto.randomUUID(),
-      username,
-      password,
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [...allAccounts, newAccount];
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(updated));
-    setAccounts(updated);
-    return { success: true };
   }, []);
 
-  const deleteAccount = useCallback((id: string): { success: boolean; error?: string } => {
-    const allAccounts = getAccounts();
-    if (allAccounts.length <= 1) {
+  const deleteAccount = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
+    if (accounts.length <= 1) {
       return { success: false, error: 'Cannot delete the last admin account' };
     }
-    const target = allAccounts.find((a) => a.id === id);
+    const target = accounts.find((a) => a.id === id);
     if (target && target.username === currentUser) {
       return { success: false, error: 'Cannot delete your own account while logged in' };
     }
-    const updated = allAccounts.filter((a) => a.id !== id);
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(updated));
-    setAccounts(updated);
-    return { success: true };
-  }, [currentUser]);
+
+    try {
+      const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (!res.ok) {
+        return { success: false, error: result.error };
+      }
+      setAccounts((prev) => prev.filter((a) => a.id !== id));
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Network error' };
+    }
+  }, [accounts, currentUser]);
 
   return { isAuthenticated, isLoading, currentUser, accounts, login, logout, addAccount, deleteAccount };
 }

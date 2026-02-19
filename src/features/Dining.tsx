@@ -32,7 +32,7 @@ export default function Dining({ onReserveTable }: DiningProps) {
   }, [next, paused]);
 
   return (
-    <section id="dining" className="scroll-mt-20 py-24 bg-white">
+    <section id="dining" className="scroll-mt-20 py-24 bg-white dark:bg-dark-card transition-colors">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* ---- Food photo carousel ---- */}
         <div className="mb-16">
@@ -40,7 +40,7 @@ export default function Dining({ onReserveTable }: DiningProps) {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600 mb-3">
               From Our Kitchen
             </p>
-            <h3 className="font-serif text-3xl font-bold text-hotel-900">
+            <h3 className="font-serif text-3xl font-bold text-hotel-900 dark:text-white">
               Signature Dishes
             </h3>
           </div>
@@ -132,10 +132,10 @@ export default function Dining({ onReserveTable }: DiningProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600 mb-3">
             Culinary Excellence
           </p>
-          <h2 className="font-serif text-4xl font-bold text-hotel-900 mb-4">
+          <h2 className="font-serif text-4xl font-bold text-hotel-900 dark:text-white mb-4">
             Dining & Cuisine
           </h2>
-          <p className="mx-auto max-w-2xl text-hotel-500 leading-relaxed">
+          <p className="mx-auto max-w-2xl text-hotel-500 dark:text-hotel-400 leading-relaxed">
             Embark on a culinary journey with our award-winning restaurants, each offering
             a unique gastronomic experience crafted by world-class chefs.
           </p>
@@ -146,7 +146,7 @@ export default function Dining({ onReserveTable }: DiningProps) {
           {RESTAURANTS.map((r) => (
             <div
               key={r.name}
-              className="group flex flex-col rounded-2xl bg-white border border-hotel-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="group flex flex-col rounded-2xl bg-white dark:bg-dark-bg border border-hotel-100 dark:border-dark-border shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
               {/* Image */}
               <div className="relative h-56 overflow-hidden">
@@ -168,16 +168,16 @@ export default function Dining({ onReserveTable }: DiningProps) {
 
               {/* Content */}
               <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-gold-700 bg-gold-50 rounded-full px-3 py-1.5 w-fit mb-4">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-gold-700 dark:text-gold-400 bg-gold-50 dark:bg-gold-900/20 rounded-full px-3 py-1.5 w-fit mb-4">
                   <Clock className="h-3.5 w-3.5" />
                   {r.hours}
                 </div>
-                <p className="text-sm text-hotel-500 leading-relaxed mb-5">{r.description}</p>
+                <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5">{r.description}</p>
                 <div className="flex flex-wrap gap-2 mb-5">
                   {r.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-hotel-50 px-3 py-1 text-xs font-medium text-hotel-600"
+                      className="rounded-full bg-hotel-50 dark:bg-dark-card px-3 py-1 text-xs font-medium text-hotel-600 dark:text-hotel-300"
                     >
                       {tag}
                     </span>
@@ -185,7 +185,7 @@ export default function Dining({ onReserveTable }: DiningProps) {
                 </div>
                 <button
                   onClick={() => onReserveTable?.(r.name)}
-                  className="mt-auto flex items-center justify-center gap-2 w-full rounded-xl bg-hotel-900 py-3 text-sm font-semibold text-white transition-all hover:bg-hotel-800 active:scale-[0.98]"
+                  className="mt-auto flex items-center justify-center gap-2 w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all hover:bg-hotel-800 dark:hover:bg-gold-700 active:scale-[0.98]"
                 >
                   <Phone className="h-4 w-4" />
                   Reserve a Table

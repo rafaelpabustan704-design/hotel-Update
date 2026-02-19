@@ -41,42 +41,20 @@ export const NAV_ITEMS = [
 ] as const;
 
 /* ================================================================== */
-/*  Room Types & Inventory                                             */
-/* ================================================================== */
-
-export const ROOM_TYPES = [
-  'Deluxe Room', 'Executive Suite', 'Presidential Suite',
-] as const;
-
-export const ROOM_INVENTORY = [
-  { name: 'Deluxe Room',        total: 10, color: 'blue',   dot: 'bg-blue-500',   bar: 'bg-blue-500' },
-  { name: 'Executive Suite',    total: 5,  color: 'purple', dot: 'bg-purple-500', bar: 'bg-purple-500' },
-  { name: 'Presidential Suite', total: 2,  color: 'amber',  dot: 'bg-amber-500',  bar: 'bg-amber-500' },
-];
-
-/* ================================================================== */
 /*  Room Colors (calendar & availability)                              */
 /* ================================================================== */
 
-export const ROOM_COLORS: Record<string, { bg: string; dot: string; text: string }> = {
-  'Deluxe Room':        { bg: 'bg-blue-50',   dot: 'bg-blue-500',   text: 'text-blue-700' },
-  'Executive Suite':    { bg: 'bg-purple-50', dot: 'bg-purple-500', text: 'text-purple-700' },
-  'Presidential Suite': { bg: 'bg-amber-50',  dot: 'bg-amber-500',  text: 'text-amber-700' },
+export const ROOM_COLORS: Record<string, { hex: string; hexBg: string; hexText: string }> = {
+  'Deluxe Room':        { hex: '#3b82f6', hexBg: '#eff6ff', hexText: '#1d4ed8' },
+  'Executive Suite':    { hex: '#a855f7', hexBg: '#faf5ff', hexText: '#7e22ce' },
+  'Presidential Suite': { hex: '#f59e0b', hexBg: '#fffbeb', hexText: '#b45309' },
 };
+
+const ROOM_COLOR_FALLBACK = { hex: '#6b7280', hexBg: '#f9fafb', hexText: '#374151' };
 
 export function getRoomColor(roomType: string) {
-  return ROOM_COLORS[roomType] || { bg: 'bg-gray-50', dot: 'bg-gray-500', text: 'text-gray-700' };
+  return ROOM_COLORS[roomType] || ROOM_COLOR_FALLBACK;
 }
-
-/* ================================================================== */
-/*  Room Guest Limits                                                  */
-/* ================================================================== */
-
-export const ROOM_GUEST_LIMITS: Record<string, { maxAdults: number; maxChildren: number }> = {
-  'Deluxe Room':        { maxAdults: 2, maxChildren: 2 },
-  'Executive Suite':    { maxAdults: 3, maxChildren: 3 },
-  'Presidential Suite': { maxAdults: 4, maxChildren: 4 },
-};
 
 /* ================================================================== */
 /*  Room Features                                                      */
@@ -108,6 +86,7 @@ export const ROOMS: RoomDetail[] = [
   {
     id: 1,
     name: 'Deluxe Room',
+    roomTypeKey: 'Deluxe Room',
     tagline: 'Classic Elegance, Modern Comfort',
     description:
       'Elegant comfort with a king-size bed, city views, and premium amenities for the discerning traveler.',
@@ -139,6 +118,7 @@ export const ROOMS: RoomDetail[] = [
   {
     id: 2,
     name: 'Executive Suite',
+    roomTypeKey: 'Executive Suite',
     tagline: 'Elevated Luxury, Panoramic Views',
     description:
       'Spacious luxury with a separate living area, panoramic views, and exclusive lounge access.',
@@ -172,6 +152,7 @@ export const ROOMS: RoomDetail[] = [
   {
     id: 3,
     name: 'Presidential Suite',
+    roomTypeKey: 'Presidential Suite',
     tagline: 'The Pinnacle of Opulence',
     description:
       'The pinnacle of opulence featuring a private terrace, butler service, and bespoke furnishings.',
@@ -247,14 +228,16 @@ export const RESTAURANTS = [
   },
 ];
 
-export const RESTAURANT_COLORS: Record<string, { bg: string; dot: string; text: string }> = {
-  'The Ocean Terrace': { bg: 'bg-cyan-50', dot: 'bg-cyan-500', text: 'text-cyan-700' },
-  'Sakura Garden':     { bg: 'bg-pink-50', dot: 'bg-pink-500', text: 'text-pink-700' },
-  'La Dolce Vita':     { bg: 'bg-orange-50', dot: 'bg-orange-500', text: 'text-orange-700' },
+export const RESTAURANT_COLORS: Record<string, { hex: string; hexBg: string; hexText: string }> = {
+  'The Ocean Terrace': { hex: '#06b6d4', hexBg: '#ecfeff', hexText: '#0e7490' },
+  'Sakura Garden':     { hex: '#ec4899', hexBg: '#fdf2f8', hexText: '#be185d' },
+  'La Dolce Vita':     { hex: '#f97316', hexBg: '#fff7ed', hexText: '#c2410c' },
 };
 
+const RESTAURANT_COLOR_FALLBACK = { hex: '#6b7280', hexBg: '#f9fafb', hexText: '#374151' };
+
 export function getRestaurantColor(restaurant: string) {
-  return RESTAURANT_COLORS[restaurant] || { bg: 'bg-gray-50', dot: 'bg-gray-500', text: 'text-gray-700' };
+  return RESTAURANT_COLORS[restaurant] || RESTAURANT_COLOR_FALLBACK;
 }
 
 export const TIME_SLOTS = [

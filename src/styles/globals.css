@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Inter', sans-serif;
@@ -23,6 +25,9 @@
   --color-hotel-700: #334e68;
   --color-hotel-800: #243b53;
   --color-hotel-900: #102a43;
+  --color-dark-card: #1a2332;
+  --color-dark-bg: #0f1923;
+  --color-dark-border: #243b53;
 }
 
 html {

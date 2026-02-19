@@ -23,7 +23,7 @@ export default function About() {
   }, [next, paused]);
 
   return (
-    <section id="about" className="scroll-mt-20 py-12 sm:py-24 bg-white">
+    <section id="about" className="scroll-mt-20 py-12 sm:py-24 bg-white dark:bg-dark-card transition-colors">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Image carousel side */}
@@ -90,15 +90,15 @@ export default function About() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600 mb-3">
               Welcome to Grand Horizon
             </p>
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-hotel-900 mb-4 sm:mb-6 leading-tight">
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-hotel-900 dark:text-white mb-4 sm:mb-6 leading-tight">
               A Legacy of Luxury &<br />Unmatched Hospitality
             </h2>
-            <p className="text-sm sm:text-base text-hotel-600 leading-relaxed mb-4 sm:mb-6">
+            <p className="text-sm sm:text-base text-hotel-600 dark:text-hotel-400 leading-relaxed mb-4 sm:mb-6">
               Since 1999, Grand Horizon Hotel has been the epitome of refined luxury. Every detail,
               from our meticulously designed rooms to our world-class dining, is crafted to provide
               an unforgettable experience.
             </p>
-            <p className="text-sm sm:text-base text-hotel-600 leading-relaxed mb-6 sm:mb-10">
+            <p className="text-sm sm:text-base text-hotel-600 dark:text-hotel-400 leading-relaxed mb-6 sm:mb-10">
               Our dedicated staff ensures that every moment of your stay surpasses expectations.
               Whether you&apos;re here for business or leisure, discover a sanctuary where elegance
               meets comfort.
@@ -109,14 +109,14 @@ export default function About() {
               {ABOUT_STATS.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex items-center gap-3 sm:gap-4 rounded-xl bg-hotel-50 p-3 sm:p-5 transition-shadow hover:shadow-md"
+                  className="flex items-center gap-3 sm:gap-4 rounded-xl bg-hotel-50 dark:bg-dark-bg p-3 sm:p-5 transition-shadow hover:shadow-md"
                 >
                   <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
                     <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg sm:text-2xl font-bold text-hotel-900 truncate">{stat.value}</p>
-                    <p className="text-xs sm:text-sm text-hotel-500 leading-tight">{stat.label}</p>
+                    <p className="text-lg sm:text-2xl font-bold text-hotel-900 dark:text-white truncate">{stat.value}</p>
+                    <p className="text-xs sm:text-sm text-hotel-500 dark:text-hotel-400 leading-tight">{stat.label}</p>
                   </div>
                 </div>
               ))}

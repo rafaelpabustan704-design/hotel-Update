@@ -13,7 +13,7 @@ interface DiningReservationModalProps {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-hotel-200 bg-white px-4 py-3 text-sm text-hotel-900 placeholder:text-hotel-400 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-colors';
+  'w-full rounded-xl border border-hotel-200 dark:border-dark-border bg-white dark:bg-dark-bg px-4 py-3 text-sm text-hotel-900 dark:text-hotel-100 placeholder:text-hotel-400 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-colors';
 
 export default function DiningReservationModal({
   isOpen,
@@ -121,7 +121,7 @@ export default function DiningReservationModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-b from-white to-stone-50 shadow-2xl animate-modal-content">
+      <div className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-b from-white to-stone-50 dark:from-dark-card dark:to-dark-bg shadow-2xl animate-modal-content">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between bg-hotel-900 px-6 py-5 rounded-t-2xl">
           <div>
@@ -141,7 +141,7 @@ export default function DiningReservationModal({
         {submitted ? (
           /* Success state */
           <div className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-500">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/30 text-green-500">
               <svg
                 className="h-10 w-10"
                 fill="none"
@@ -152,11 +152,11 @@ export default function DiningReservationModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-hotel-900 mb-3">
+            <h3 className="font-serif text-2xl font-bold text-hotel-900 dark:text-white mb-3">
               Table Reserved!
             </h3>
-            <p className="text-hotel-500 mb-8 max-w-md mx-auto leading-relaxed">
-              Your table at <span className="font-semibold text-hotel-700">{form.restaurant}</span> has
+            <p className="text-hotel-500 dark:text-hotel-400 mb-8 max-w-md mx-auto leading-relaxed">
+              Your table at <span className="font-semibold text-hotel-700 dark:text-hotel-200">{form.restaurant}</span> has
               been confirmed. We look forward to welcoming you.
             </p>
             <button
@@ -172,10 +172,10 @@ export default function DiningReservationModal({
             {/* Two-column layout matching BookingModal */}
             <div className="grid lg:grid-cols-5 gap-8">
               {/* Left panel — Calendar + Restaurant/Time */}
-              <div className="lg:col-span-2 rounded-xl border border-hotel-100 bg-hotel-50/30 p-4">
+              <div className="lg:col-span-2 rounded-xl border border-hotel-100 dark:border-dark-border bg-hotel-50/30 dark:bg-dark-bg/50 p-4">
                 {/* Restaurant selector */}
                 <div className="mb-4">
-                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-hotel-500 uppercase tracking-wider">
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-hotel-500 dark:text-hotel-400 uppercase tracking-wider">
                     <UtensilsCrossed className="h-3.5 w-3.5" />
                     Restaurant
                   </label>
@@ -199,7 +199,7 @@ export default function DiningReservationModal({
 
                 {/* Time selector */}
                 <div className="mt-4">
-                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-hotel-500 uppercase tracking-wider">
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-hotel-500 dark:text-hotel-400 uppercase tracking-wider">
                     <Clock className="h-3.5 w-3.5" />
                     Time
                   </label>
@@ -227,7 +227,7 @@ export default function DiningReservationModal({
                 {/* Name & Email */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                       <User className="h-4 w-4 text-hotel-400" />
                       Full Name
                     </label>
@@ -242,7 +242,7 @@ export default function DiningReservationModal({
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                       <Mail className="h-4 w-4 text-hotel-400" />
                       Email
                     </label>
@@ -260,7 +260,7 @@ export default function DiningReservationModal({
 
                 {/* Phone */}
                 <div>
-                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                     <Phone className="h-4 w-4 text-hotel-400" />
                     Phone
                   </label>
@@ -278,7 +278,7 @@ export default function DiningReservationModal({
                 {/* Adults & Children */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                       <Users className="h-4 w-4 text-hotel-400" />
                       Adults
                     </label>
@@ -294,7 +294,7 @@ export default function DiningReservationModal({
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                    <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                       <Baby className="h-4 w-4 text-hotel-400" />
                       Children
                     </label>
@@ -312,7 +312,7 @@ export default function DiningReservationModal({
 
                 {/* Special Requests */}
                 <div>
-                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700">
+                  <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300">
                     <MessageSquare className="h-4 w-4 text-hotel-400" />
                     Special Requests{' '}
                     <span className="text-hotel-400 font-normal">(optional)</span>
@@ -329,7 +329,7 @@ export default function DiningReservationModal({
 
                 {/* Date validation message */}
                 {!dateSelected && (
-                  <p className="text-xs text-gold-600 bg-gold-50 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <p className="text-xs text-gold-600 bg-gold-50 dark:bg-gold-900/20 rounded-lg px-3 py-2 flex items-center gap-2">
                     <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -341,10 +341,10 @@ export default function DiningReservationModal({
                 <button
                   type="submit"
                   disabled={!dateSelected}
-                  className={`w-full rounded-xl py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-lg transition-all active:scale-[0.98] ${
+                  className={`w-full rounded-xl py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-lg transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 ${
                     dateSelected
                       ? 'bg-gold-600 shadow-gold-600/25 hover:bg-gold-700 hover:shadow-gold-700/30'
-                      : 'bg-hotel-300 shadow-none cursor-not-allowed'
+                      : 'bg-hotel-300 dark:bg-hotel-700 shadow-none cursor-not-allowed'
                   }`}
                 >
                   Confirm Table Reservation

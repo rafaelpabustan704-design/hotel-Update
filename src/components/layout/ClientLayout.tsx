@@ -4,6 +4,10 @@ import { useState, createContext, useContext, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { ReservationProvider } from '@/hooks/ReservationContext';
 import { DiningReservationProvider } from '@/hooks/DiningReservationContext';
+import { RoomTypeProvider } from '@/hooks/RoomTypeContext';
+import { RoomProvider } from '@/hooks/RoomContext';
+import { HotelSettingsProvider } from '@/hooks/HotelSettingsContext';
+import { ThemeProvider } from '@/hooks/ThemeContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import BookingModal from '@/components/ui/BookingModal';
@@ -14,7 +18,7 @@ import DiningReservationModal from '@/components/ui/DiningReservationModal';
 /* ------------------------------------------------------------------ */
 
 interface BookingUIContextType {
-  openBooking: () => void;
+  openBooking: (roomType?: string) => void;
   openDining: (restaurant?: string) => void;
 }
 
@@ -36,45 +40,52 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
   const isAdmin = pathname.startsWith('/admin');
 
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [selectedRoomType, setSelectedRoomType] = useState('');
   const [diningOpen, setDiningOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState('');
 
-  const openBooking = () => setBookingOpen(true);
+  const openBooking = (roomType?: string) => {
+    setSelectedRoomType(roomType || '');
+    setBookingOpen(true);
+  };
   const openDining = (restaurant?: string) => {
     setSelectedRestaurant(restaurant || '');
     setDiningOpen(true);
   };
 
-  // Admin pages get a minimal shell – only the context providers, no
-  // client Navbar / Footer / booking modals.
+  const providers = (content: ReactNode) => (
+    <ThemeProvider>
+      <HotelSettingsProvider>
+        <RoomTypeProvider>
+          <RoomProvider>
+            <ReservationProvider>
+              <DiningReservationProvider>
+                {content}
+              </DiningReservationProvider>
+            </ReservationProvider>
+          </RoomProvider>
+        </RoomTypeProvider>
+      </HotelSettingsProvider>
+    </ThemeProvider>
+  );
+
   if (isAdmin) {
-    return (
-      <ReservationProvider>
-        <DiningReservationProvider>
-          {children}
-        </DiningReservationProvider>
-      </ReservationProvider>
-    );
+    return providers(children);
   }
 
-  // Client pages get the full experience
-  return (
-    <ReservationProvider>
-      <DiningReservationProvider>
-        <BookingUIContext.Provider value={{ openBooking, openDining }}>
-          <div className="min-h-screen flex flex-col">
-            <Navbar onBookNow={openBooking} />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
-            <DiningReservationModal
-              isOpen={diningOpen}
-              onClose={() => setDiningOpen(false)}
-              preselectedRestaurant={selectedRestaurant}
-            />
-          </div>
-        </BookingUIContext.Provider>
-      </DiningReservationProvider>
-    </ReservationProvider>
+  return providers(
+    <BookingUIContext.Provider value={{ openBooking, openDining }}>
+      <div className="min-h-screen flex flex-col bg-white dark:bg-dark-bg transition-colors">
+        <Navbar onBookNow={openBooking} />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} preselectedRoomType={selectedRoomType} />
+        <DiningReservationModal
+          isOpen={diningOpen}
+          onClose={() => setDiningOpen(false)}
+          preselectedRestaurant={selectedRestaurant}
+        />
+      </div>
+    </BookingUIContext.Provider>
   );
 }
