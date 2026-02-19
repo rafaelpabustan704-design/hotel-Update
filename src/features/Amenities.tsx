@@ -32,13 +32,13 @@ export default function Amenities() {
           {AMENITIES.map((item) => (
             <div
               key={item.title}
-              className="group rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8 text-center transition-all duration-300 hover:bg-white/20 hover:border-white/20 hover:shadow-xl hover:-translate-y-1"
+              className="group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md p-8 text-center transition-all duration-300 hover:bg-white/20 hover:border-white/20 hover:shadow-xl hover:-translate-y-1"
             >
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-600/20 text-gold-400 transition-all duration-300 group-hover:bg-gold-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-gold-600/25">
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-600/20 text-gold-400 transition-all duration-300 group-hover:bg-gold-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-gold-600/25">
                 <item.icon className="h-7 w-7" />
               </div>
               <h3 className="font-serif text-lg font-bold text-white mb-2">{item.title}</h3>
-              <p className="text-sm text-hotel-300 leading-relaxed">{item.desc}</p>
+              <p className="mt-auto text-sm text-hotel-300 leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>

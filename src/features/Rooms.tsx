@@ -129,7 +129,14 @@ export default function Rooms({ onBookNow }: RoomsProps) {
 
   const mergedRooms = useMemo(() => {
     const matchedStaticIds = new Set<number | string>();
-    const AMENITY_TO_FEATURE: Record<string, string> = { wifi: 'wifi', coffee: 'coffee', tv: 'tv', bath: 'bath' };
+    const AMENITY_TO_FEATURE: Record<string, string> = {
+      wifi: 'wifi', coffee: 'coffee', tv: 'tv', bath: 'bath',
+      'mini bar': 'minibar', 'room service': 'roomservice',
+      'air conditioning': 'airconditioning', safe: 'safe',
+      'lounge access': 'loungeaccess', 'butler service': 'butlerservice',
+      'private terrace': 'privateterrace', balcony: 'balcony',
+      kitchen: 'kitchen', jacuzzi: 'jacuzzi',
+    };
 
     const fromManaged: RoomDetail[] = managedRooms.map((mr) => {
       const rt = roomTypes.find((t) => t.id === mr.roomTypeId);
@@ -213,21 +220,21 @@ export default function Rooms({ onBookNow }: RoomsProps) {
                 <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-1 truncate">{room.name}</h3>
                 <p className="text-xs text-gold-600 font-medium mb-3 truncate">{room.tagline}</p>
                 <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5 line-clamp-2">{room.description}</p>
-                <div className="flex flex-wrap items-center gap-2 mb-6 min-h-[2rem]">
-                  {room.features.slice(0, 4).map((feature) => {
-                    const Icon = FEATURE_ICONS[feature];
-                    if (!Icon) return null;
-                    return (
-                      <div key={feature} className="flex items-center gap-1.5 rounded-full bg-hotel-50 dark:bg-dark-bg px-3 py-1.5 text-hotel-600 dark:text-hotel-300">
-                        <Icon className="h-3.5 w-3.5" /><span className="text-xs font-medium">{FEATURE_LABELS[feature]}</span>
-                      </div>
-                    );
-                  })}
-                  {room.features.length > 4 && (
-                    <span className="text-xs text-hotel-400 font-medium">+{room.features.length - 4} more</span>
-                  )}
-                </div>
                 <div className="mt-auto">
+                  <div className="flex flex-wrap items-center gap-2 mb-6 h-[4.25rem] overflow-hidden">
+                    {room.features.slice(0, 6).map((feature) => {
+                      const Icon = FEATURE_ICONS[feature];
+                      if (!Icon) return null;
+                      return (
+                        <div key={feature} className="flex items-center gap-1.5 rounded-full bg-hotel-50 dark:bg-dark-bg px-3 py-1.5 text-hotel-600 dark:text-hotel-300">
+                          <Icon className="h-3.5 w-3.5" /><span className="text-xs font-medium">{FEATURE_LABELS[feature]}</span>
+                        </div>
+                      );
+                    })}
+                    {room.features.length > 6 && (
+                      <span className="text-xs text-hotel-400 font-medium">+{room.features.length - 6} more</span>
+                    )}
+                  </div>
                   <button onClick={(e) => { e.stopPropagation(); onBookNow(room.roomTypeKey); }} className="w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-gold-600 dark:hover:bg-gold-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2">Book This Room</button>
                 </div>
               </div>

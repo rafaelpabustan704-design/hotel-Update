@@ -463,7 +463,14 @@ function buildPreview(room: ManagedRoom, roomTypes: RoomType[]): PreviewData {
   const rt = roomTypes.find((t) => t.id === room.roomTypeId);
   const rtName = rt?.name || '';
   const s = ROOMS.find((r) => r.roomTypeKey === rtName);
-  const AMENITY_TO_FEATURE: Record<string, string> = { wifi: 'wifi', coffee: 'coffee', tv: 'tv', bath: 'bath' };
+  const AMENITY_TO_FEATURE: Record<string, string> = {
+    wifi: 'wifi', coffee: 'coffee', tv: 'tv', bath: 'bath',
+    'mini bar': 'minibar', 'room service': 'roomservice',
+    'air conditioning': 'airconditioning', safe: 'safe',
+    'lounge access': 'loungeaccess', 'butler service': 'butlerservice',
+    'private terrace': 'privateterrace', balcony: 'balcony',
+    kitchen: 'kitchen', jacuzzi: 'jacuzzi',
+  };
 
   const features = room.amenities.map((a) => AMENITY_TO_FEATURE[a.toLowerCase()]).filter((f): f is string => !!f);
 
