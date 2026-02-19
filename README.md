@@ -9,14 +9,18 @@ A modern, full-featured hotel landing page and reservation management system bui
 - **Room Booking** — Interactive calendar with date range selection, room type picker, guest limits per room, and Philippine Peso pricing
 - **Dining Reservations** — Table reservation modal with custom calendar date picker, restaurant selection, and time slots
 - **Availability Calendar** — Browse reservation calendar with color-coded room type indicators; click any date to see real-time room availability
+- **Dark / Light Theme** — Persistent theme toggle stored in `localStorage`
 - **Responsive Design** — Fully responsive across mobile, tablet, and desktop
 
 ### Admin Panel (`/admin`)
-- **Authentication** — Mock login system with session management and multi-account support
-- **Room Reservations** — Calendar and list views with filtering by room type, status, and sorting options
-- **Dining Reservations** — Calendar and list views with restaurant filtering and date-based stats
+- **Authentication** — Login system with session management and multi-account support
+- **Room Reservations** — Calendar and list views with filtering by room type, status, search, and sorting options
+- **Dining Reservations** — Calendar and list views with restaurant filtering, search, and date-based stats
+- **Room Types** — Create, edit, and delete room type categories (name, capacity, color)
+- **Room Management** — Full CRUD for individual rooms — details, pricing, bed configuration, amenities, inclusions, and image gallery
 - **Room Availability** — Real-time availability dashboard that updates when selecting dates on the calendar
-- **Admin Settings** — Add/remove admin accounts with validation
+- **Hotel Settings** — Editable hotel name and address
+- **Admin Accounts** — Add/remove admin accounts with validation
 
 ## Tech Stack
 
@@ -32,14 +36,37 @@ A modern, full-featured hotel landing page and reservation management system bui
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── admin/              # Admin panel page
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Client landing page
-├── components/             # Reusable UI components
-│   ├── layout/             # Layout components (Navbar, Footer, ClientLayout)
-│   └── ui/                 # Base UI components (BookingModal, Calendar, DiningReservationModal)
-├── features/               # Feature/section components
+├── app/                          # Next.js App Router
+│   ├── admin/                    # Admin panel page
+│   │   └── components/           # Admin UI components
+│   │       ├── shared.ts         # Shared styles & helpers
+│   │       ├── AdminLogin.tsx    # Login form
+│   │       ├── ConfirmModal.tsx  # Reusable confirmation dialog
+│   │       ├── RoomTypesTab.tsx  # Room type CRUD
+│   │       ├── ManageRoomsTab.tsx# Individual room CRUD
+│   │       ├── RoomReservationsTab.tsx
+│   │       ├── DiningReservationsTab.tsx
+│   │       └── SettingsTab.tsx   # Hotel settings & admin accounts
+│   ├── api/                      # Backend API routes
+│   │   ├── rooms/                # GET, POST, PATCH, DELETE
+│   │   ├── room-types/           # GET, POST, PATCH, DELETE
+│   │   ├── reservations/         # GET, POST, DELETE
+│   │   ├── dining-reservations/  # GET, POST, DELETE
+│   │   ├── settings/             # GET, PUT
+│   │   └── admin/                # Login, account management
+│   ├── layout.tsx                # Root layout
+│   └── page.tsx                  # Client landing page
+├── components/                   # Reusable UI components
+│   ├── layout/                   # Navbar, Footer, ClientLayout
+│   └── ui/                       # BookingModal, DiningReservationModal
+│       └── calendar/             # Calendar components
+│           ├── AdminCalendar.tsx
+│           ├── AdminDiningCalendar.tsx
+│           ├── BookingPickerCalendar.tsx
+│           ├── DiningPickerCalendar.tsx
+│           ├── CustomerCalendar.tsx
+│           └── helpers.ts
+├── features/                     # Landing page sections
 │   ├── Hero.tsx
 │   ├── About.tsx
 │   ├── Rooms.tsx
@@ -47,15 +74,21 @@ src/
 │   ├── Availability.tsx
 │   ├── Amenities.tsx
 │   └── Contact.tsx
-├── hooks/                  # Custom hooks & context providers
-│   ├── ReservationContext.tsx
-│   ├── DiningReservationContext.tsx
-│   └── useAdminAuth.ts
-├── constants/              # Static data & configuration
+├── hooks/                        # Custom hooks & context providers
+│   ├── ReservationContext.tsx     # Room reservations
+│   ├── DiningReservationContext.tsx # Dining reservations
+│   ├── RoomContext.tsx            # Managed rooms
+│   ├── RoomTypeContext.tsx        # Room types & colors
+│   ├── HotelSettingsContext.tsx   # Hotel name & address
+│   ├── ThemeContext.tsx           # Dark/light theme
+│   └── useAdminAuth.ts           # Admin authentication
+├── lib/                          # Server utilities
+│   └── db.ts                     # Read/write db.json
+├── constants/                    # Static data & configuration
 │   └── hotel.ts
-├── styles/                 # CSS & theming
+├── styles/                       # CSS & theming
 │   └── globals.css
-└── utils/                  # Utility types
+└── utils/                        # Utility types
     └── types.ts
 ```
 
@@ -108,7 +141,10 @@ From the admin sidebar you can:
 - Switch between **Room** and **Dining** reservation management
 - Toggle between **Calendar** and **List** views
 - Click dates on the calendar to view availability and stats for that day
-- Manage admin accounts in **Settings**
+- Manage **Room Types** (name, capacity, color coding)
+- Manage **Rooms** (details, pricing, amenities, images)
+- Configure **Hotel Settings** (name, address)
+- Manage **Admin Accounts** in Settings
 
 ## Room Configuration
 
@@ -118,15 +154,24 @@ From the admin sidebar you can:
 | Executive Suite | 3 | 3 | ₱15,000 |
 | Presidential Suite | 4 | 4 | ₱35,000 |
 
+Room types, pricing, and availability are fully configurable from the admin panel.
+
 ## Data Storage
 
-This project uses **client-side storage** for demonstration purposes:
+This project uses a **file-based JSON database** (`db.json`) accessed through the API routes:
 
-- **Reservations** — `localStorage` (`hotel-reservations`, `hotel-dining-reservations`)
-- **Admin session** — `sessionStorage` (`hotel-admin-auth`)
-- **Admin accounts** — `localStorage` (`hotel-admin-accounts`)
+| Data | Storage | Key / Path |
+|---|---|---|
+| Room reservations | `db.json` | `reservations` |
+| Dining reservations | `db.json` | `diningReservations` |
+| Rooms | `db.json` | `rooms` |
+| Room types | `db.json` | `roomTypes` |
+| Hotel settings | `db.json` | `settings` |
+| Admin accounts | `db.json` | `adminAccounts` |
+| Admin session | `sessionStorage` | `hotel-admin-auth` |
+| Theme preference | `localStorage` | `hotel-theme` |
 
-> No backend or database is required. All data persists in the browser.
+> No external database is required. The API routes read and write to `db.json` on disk. Session and theme preferences are stored in the browser.
 
 ## License
 
