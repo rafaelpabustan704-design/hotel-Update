@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { X, User, Mail, Phone, MessageSquare, BedDouble, Users, Baby } from 'lucide-react';
 import { useReservations } from '@/hooks/ReservationContext';
 import { useRoomTypes } from '@/hooks/RoomTypeContext';
-import { useHotelSettings } from '@/hooks/HotelSettingsContext';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 import { BookingPickerCalendar } from '@/components/ui/Calendar';
 
 interface BookingModalProps {
@@ -19,7 +19,7 @@ const inputClass =
 export default function BookingModal({ isOpen, onClose, preselectedRoomType }: BookingModalProps) {
   const { reservations, addReservation } = useReservations();
   const { roomTypes } = useRoomTypes();
-  const { settings } = useHotelSettings();
+  const { siteSettings } = useLandingContent();
 
   const [submitted, setSubmitted] = useState(false);
 
@@ -121,7 +121,7 @@ export default function BookingModal({ isOpen, onClose, preselectedRoomType }: B
               <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
             </div>
             <h3 className="font-serif text-2xl font-bold text-hotel-900 dark:text-white mb-3">Reservation Confirmed!</h3>
-            <p className="text-hotel-500 dark:text-hotel-400 mb-8 max-w-md mx-auto leading-relaxed">Thank you for choosing {settings.name}. A confirmation email will be sent to your inbox shortly.</p>
+            <p className="text-hotel-500 dark:text-hotel-400 mb-8 max-w-md mx-auto leading-relaxed">Thank you for choosing {siteSettings.name}. A confirmation email will be sent to your inbox shortly.</p>
             <button onClick={onClose} className="rounded-full bg-gold-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-gold-700">Close</button>
           </div>
         ) : (
@@ -146,12 +146,12 @@ export default function BookingModal({ isOpen, onClose, preselectedRoomType }: B
                     </select>
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div><label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300"><Users className="h-4 w-4 text-hotel-400" />Adults <span className="text-hotel-400 font-normal text-xs">(max {guestLimits.maxAdults})</span></label><input type="number" name="adults" required min={1} max={guestLimits.maxAdults} value={form.adults} onChange={handleChange} className={inputClass} /></div>
-                  <div><label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300"><Baby className="h-4 w-4 text-hotel-400" />Children <span className="text-hotel-400 font-normal text-xs">(max {guestLimits.maxChildren})</span></label><input type="number" name="children" min={0} max={guestLimits.maxChildren} value={form.children} onChange={handleChange} className={inputClass} /></div>
-                </div>
-                <p className="text-xs text-hotel-400 flex items-center gap-1.5 -mt-1"><Users className="h-3.5 w-3.5" />{form.roomType} allows up to {guestLimits.maxAdults} adults and {guestLimits.maxChildren} children</p>
                 <div><label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-hotel-700 dark:text-hotel-300"><MessageSquare className="h-4 w-4 text-hotel-400" />Special Requests <span className="text-hotel-400 font-normal">(optional)</span></label><textarea name="specialRequests" rows={2} value={form.specialRequests} onChange={handleChange} placeholder="Any special requirements..." className={`${inputClass} resize-none`} /></div>
+                <div className="flex items-center gap-2 rounded-xl border border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 px-4 py-3">
+                  <Users className="h-4 w-4 text-gold-600" />
+                  <span className="text-sm text-hotel-700 dark:text-hotel-300 font-medium">Max {guestLimits.maxAdults + guestLimits.maxChildren} guests</span>
+                  <span className="text-xs text-hotel-400">({guestLimits.maxAdults} adults, {guestLimits.maxChildren} children)</span>
+                </div>
                 {!datesSelected && <p className="text-xs text-gold-600 bg-gold-50 dark:bg-gold-900/20 rounded-lg px-3 py-2 flex items-center gap-2"><svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Please select your check-in and check-out dates on the calendar</p>}
                 <button type="submit" disabled={!datesSelected} className={`w-full rounded-xl py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-lg transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 ${datesSelected ? 'bg-gold-600 shadow-gold-600/25 hover:bg-gold-700 hover:shadow-gold-700/30' : 'bg-hotel-300 dark:bg-hotel-700 shadow-none cursor-not-allowed'}`}>Confirm Reservation</button>
               </div>

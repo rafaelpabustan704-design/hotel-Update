@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Users, User, CalendarDays, UtensilsCrossed, Clock } from 'lucide-react';
-import type { DiningReservation } from '@/utils/types';
-import { RESTAURANT_COLORS, getRestaurantColor } from '@/constants/hotel';
+import type { DiningReservation } from '@/types';
+import { RESTAURANT_COLORS, getRestaurantColor } from '@/utils/room-features';
 import { DAYS, MONTHS, toDateStr, getCalendarDays, buildDiningReservationMap } from './helpers';
 
 interface AdminDiningCalendarProps {

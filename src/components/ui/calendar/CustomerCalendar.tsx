@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Reservation, RoomType } from '@/utils/types';
-import { getRoomColor } from '@/constants/hotel';
+import type { Reservation, RoomType } from '@/types';
+import { getRoomColor } from '@/utils/room-features';
 import { getColorClasses } from '@/hooks/RoomTypeContext';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 import { DAYS, MONTHS, toDateStr, getCalendarDays, buildReservationMap } from './helpers';
 
 interface CustomerCalendarProps {
@@ -14,6 +15,9 @@ interface CustomerCalendarProps {
 }
 
 export function CustomerCalendar({ reservations, roomTypes, onDateSelect }: CustomerCalendarProps) {
+  const { availabilityContent } = useLandingContent();
+  const tips = availabilityContent.bookingNotes;
+
   const colorFor = (roomTypeName: string) => {
     const stat = getRoomColor(roomTypeName);
     if (stat.hex !== '#6b7280') return stat;
@@ -135,27 +139,19 @@ export function CustomerCalendar({ reservations, roomTypes, onDateSelect }: Cust
       </div>
 
       {/* Booking tips */}
-      <div className="mt-6 rounded-xl bg-hotel-50 dark:bg-dark-bg border border-hotel-100 dark:border-dark-border p-5">
-        <h4 className="text-sm font-semibold text-hotel-800 dark:text-hotel-200 mb-3">Booking Tips</h4>
-        <ul className="space-y-2 text-xs text-hotel-500 dark:text-hotel-400 leading-relaxed">
-          <li className="flex items-start gap-2">
-            <span className="mt-1 h-1 w-1 rounded-full bg-gold-500 shrink-0" />
-            Click any date to check room availability on the sidebar
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-1 h-1 w-1 rounded-full bg-gold-500 shrink-0" />
-            Colored dots indicate existing bookings for that day
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-1 h-1 w-1 rounded-full bg-gold-500 shrink-0" />
-            Weekday stays often have more availability
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-1 h-1 w-1 rounded-full bg-gold-500 shrink-0" />
-            Book early for weekends and holidays to secure your preferred room
-          </li>
-        </ul>
-      </div>
+      {tips.length > 0 && (
+        <div className="mt-6 rounded-xl bg-hotel-50 dark:bg-dark-bg border border-hotel-100 dark:border-dark-border p-5">
+          <h4 className="text-sm font-semibold text-hotel-800 dark:text-hotel-200 mb-3">Booking Notes</h4>
+          <ul className="space-y-2 text-xs text-hotel-500 dark:text-hotel-400 leading-relaxed">
+            {tips.map((tip, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-1 h-1 w-1 rounded-full bg-gold-500 shrink-0" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

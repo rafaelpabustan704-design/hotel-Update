@@ -6,9 +6,9 @@ import {
   ChevronDown, ChevronUp, Filter, ArrowUpDown,
   UtensilsCrossed, Clock, X, CalendarRange, LayoutList,
 } from 'lucide-react';
-import type { DiningReservation } from '@/utils/types';
-import { RESTAURANT_NAMES } from '@/constants/hotel';
+import type { DiningReservation } from '@/types';
 import { AdminDiningCalendar } from '@/components/ui/Calendar';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 import { cardCls, inputCls, selectCls, smallLabelCls, getTodayStr, formatDate, formatTime } from './shared';
 import ConfirmModal from './ConfirmModal';
 
@@ -16,14 +16,14 @@ type ViewMode = 'calendar' | 'list';
 type DiningStatusFilter = 'all' | 'upcoming' | 'today' | 'past';
 type DiningSortBy = 'newest' | 'oldest' | 'date-asc' | 'date-desc' | 'name-asc' | 'guests-desc';
 
-const restaurantFilterOptions = ['All Restaurants', ...RESTAURANT_NAMES];
-
 interface DiningReservationsTabProps {
   diningReservations: DiningReservation[];
   deleteDiningReservation: (id: string) => void;
 }
 
 export default function DiningReservationsTab({ diningReservations, deleteDiningReservation }: DiningReservationsTabProps) {
+  const { restaurants } = useLandingContent();
+  const restaurantFilterOptions = ['All Restaurants', ...restaurants.map((r) => r.name)];
   const todayStr = getTodayStr();
 
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');

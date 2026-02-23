@@ -1,26 +1,19 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { Trash2, Pencil, Plus, DoorOpen, XCircle, X, Upload, ImageIcon, Check, Eye, ChevronLeft, ChevronRight, BedDouble, Users, Ruler } from 'lucide-react';
-import type { RoomType, ManagedRoom } from '@/utils/types';
-import { ROOMS, FEATURE_ICONS, FEATURE_LABELS } from '@/constants/hotel';
+import { useState } from 'react';
+import { Trash2, Pencil, Plus, DoorOpen, XCircle, X, Check, Eye, ChevronLeft, ChevronRight, BedDouble, Users, Ruler } from 'lucide-react';
+
+import type { RoomType, ManagedRoom } from '@/types';
+import { FEATURE_ICONS, FEATURE_LABELS } from '@/utils/room-features';
 import { cardCls, inputCls, labelCls } from './shared';
+import { MultiImageUploader } from './ImageUploader';
 import ConfirmModal from './ConfirmModal';
 
-function getStaticDefaults(room: ManagedRoom, roomTypes: RoomType[]) {
-  const rt = roomTypes.find((t) => t.id === room.roomTypeId);
-  const rtName = rt?.name || '';
-  const s = ROOMS.find((r) => r.roomTypeKey === rtName);
-  if (!s) return {};
-  return {
-    tagline: s.tagline,
-    description: s.description,
-    longDescription: s.longDescription,
-    bedType: s.specs.find((sp) => sp.label === 'Bed')?.value || '',
-    roomSize: s.specs.find((sp) => sp.label === 'Size')?.value || '',
-    view: s.specs.find((sp) => sp.label === 'View')?.value || '',
-    inclusions: s.inclusions,
-  };
+function getStaticDefaults(_room: ManagedRoom, _roomTypes: RoomType[]): {
+  tagline?: string; description?: string; longDescription?: string;
+  bedType?: string; roomSize?: string; view?: string; inclusions?: string[];
+} {
+  return {};
 }
 
 interface ManageRoomsTabProps {
@@ -33,166 +26,13 @@ interface ManageRoomsTabProps {
 
 const EMPTY_FORM = { name: '', roomTypeId: '', price: 0, maxPax: 2, description: '', longDescription: '', tagline: '', bedType: '', bedQty: 1, extraBedType: '', extraBedQty: 0, roomSize: '', view: '', amenities: '', inclusions: '' };
 
-const BED_TYPE_OPTIONS = ['Single', 'Twin', 'Double', 'Queen', 'King Size', 'Canopy King', 'Super King', 'Bunk Bed'];
+const AMENITY_KEYS = new Set([
+  'wifi', 'coffee', 'tv', 'bath', 'mini bar', 'room service',
+  'air conditioning', 'safe', 'lounge access', 'butler service',
+  'private terrace', 'balcony', 'kitchen', 'jacuzzi',
+]);
 
-const VIEW_OPTIONS = ['City View', 'Ocean View', 'Garden View', 'Pool View', 'Mountain View', 'Panoramic', 'Ocean & City', 'Courtyard', 'River View', 'Skyline'];
-
-const AMENITY_OPTIONS = [
-  'WiFi', 'Coffee', 'TV', 'Bath', 'Mini Bar', 'Room Service',
-  'Air Conditioning', 'Safe', 'Lounge Access', 'Butler Service',
-  'Private Terrace', 'Balcony', 'Kitchen', 'Jacuzzi',
-];
-
-const INCLUSION_OPTIONS = [
-  'Daily breakfast buffet', 'Welcome drink on arrival', 'High-speed WiFi',
-  'Daily housekeeping', 'Access to fitness center', 'In-room safe & minibar',
-  'Executive Lounge access', 'Evening cocktails & canapés', 'Turndown service',
-  'Complimentary pressing service', 'Late checkout (subject to availability)',
-  'Soaking tub & rain shower', 'Nespresso machine & premium minibar',
-  '24-hour dedicated butler service', 'Daily breakfast in-suite or restaurant',
-  'Airport limousine transfer', 'Private terrace with jacuzzi',
-  'Premium bar & Champagne selection', 'Complimentary spa treatment (60 min)',
-  'Bose surround sound system', 'Walk-in wardrobe & pressing service',
-  'Priority restaurant reservations', 'Late checkout guaranteed',
-];
-
-function resizeImage(file: File, maxDim = 800, quality = 0.7): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          const ratio = Math.min(maxDim / width, maxDim / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = reject;
-      img.src = reader.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-/* ─── Image Upload Field ─── */
-
-function ImageUploadField({ images, onChange }: { images: string[]; onChange: (imgs: string[]) => void }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleFiles = useCallback(async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    setLoading(true);
-    try {
-      const newImages = await Promise.all(
-        Array.from(files).map((f) => resizeImage(f))
-      );
-      onChange([...images, ...newImages]);
-    } catch {
-      /* silently skip unreadable files */
-    } finally {
-      setLoading(false);
-      if (fileRef.current) fileRef.current.value = '';
-    }
-  }, [images, onChange]);
-
-  const remove = (index: number) => {
-    onChange(images.filter((_, i) => i !== index));
-  };
-
-  return (
-    <div>
-      <label className={labelCls}>
-        <ImageIcon className="h-3.5 w-3.5" />
-        Images
-      </label>
-
-      {images.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {images.map((src, i) => (
-            <div key={i} className="group relative h-20 w-20 rounded-lg overflow-hidden border border-hotel-200 dark:border-dark-border">
-              <img src={src} alt={`Room image ${i + 1}`} className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => remove(i)}
-                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="h-4 w-4 text-white" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        disabled={loading}
-        className="flex items-center gap-2 rounded-xl border-2 border-dashed border-hotel-200 dark:border-dark-border px-4 py-3 text-sm text-hotel-500 dark:text-hotel-400 transition-colors hover:border-gold-400 hover:text-gold-600 dark:hover:text-gold-400 w-full justify-center"
-      >
-        <Upload className="h-4 w-4" />
-        {loading ? 'Processing...' : 'Upload Images'}
-      </button>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
-      />
-    </div>
-  );
-}
-
-/* ─── Chip Selector ─── */
-
-function ChipSelector({ options, selected, onChange, columns = 2 }: { options: string[]; selected: string[]; onChange: (items: string[]) => void; columns?: number }) {
-  const toggle = (item: string) => {
-    onChange(selected.includes(item) ? selected.filter((s) => s !== item) : [...selected, item]);
-  };
-
-  const gridCls = columns === 3 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2';
-
-  return (
-    <div>
-      <div className={`grid ${gridCls} gap-1.5`}>
-        {options.map((opt) => {
-          const active = selected.includes(opt);
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => toggle(opt)}
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium border text-left transition-all ${
-                active
-                  ? 'border-gold-500 bg-gold-50 text-gold-700 dark:bg-gold-900/30 dark:text-gold-300 dark:border-gold-600'
-                  : 'border-hotel-200 dark:border-dark-border text-hotel-500 dark:text-hotel-400 hover:border-hotel-300 dark:hover:border-hotel-600'
-              }`}
-            >
-              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${active ? 'bg-gold-600 border-gold-600 dark:bg-gold-500 dark:border-gold-500' : 'border-hotel-300 dark:border-hotel-600'}`}>
-                {active && <Check className="h-2.5 w-2.5 text-white" />}
-              </span>
-              <span className="truncate">{opt}</span>
-            </button>
-          );
-        })}
-      </div>
-      {selected.length > 0 && (
-        <p className="text-[11px] text-hotel-400 mt-2">{selected.length} selected</p>
-      )}
-    </div>
-  );
-}
+/* ImageUploadField is now handled by the shared MultiImageUploader */
 
 /* ─── Room Form (shared between Add & Edit) ─── */
 
@@ -216,138 +56,76 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl border border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 p-4 flex flex-col">{children}</div>;
 }
 
+function formatPhp(value: number) {
+  return `₱${value.toLocaleString('en-PH')}`;
+}
+
 function RoomForm({ form, images, roomTypes, error, submitLabel, onFormChange, onImagesChange, onSubmit, onCancel }: RoomFormProps) {
+  const [priceInput, setPriceInput] = useState(form.price > 0 ? form.price.toString() : '');
+  const [priceFocused, setPriceFocused] = useState(false);
+
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      {/* Row 1: Basic Info + Specs | Amenities */}
-      <div className="grid lg:grid-cols-2 gap-5">
-        <div className="space-y-5">
-          <SectionCard>
-            <SectionHeading>Basic Information</SectionHeading>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Name</label>
-                <input type="text" value={form.name} onChange={(e) => onFormChange({ name: e.target.value })} placeholder="e.g. Ocean View Deluxe" required className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Room Type</label>
-                <select value={form.roomTypeId} onChange={(e) => {
-                  const rt = roomTypes.find((t) => t.id === e.target.value);
-                  onFormChange({ roomTypeId: e.target.value, ...(rt ? { maxPax: rt.maxAdults + rt.maxChildren } : {}) });
-                }} required className={inputCls}>
-                  <option value="">Select room type</option>
-                  {roomTypes.map((rt) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls}>Tagline</label>
-                <input type="text" value={form.tagline} onChange={(e) => onFormChange({ tagline: e.target.value })} placeholder="e.g. Classic Elegance, Modern Comfort" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Price (per night)</label>
-                <input type="number" min={0} value={form.price} onChange={(e) => onFormChange({ price: parseFloat(e.target.value) || 0 })} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Max Pax</label>
-                <div className="relative">
-                  <input type="number" min={1} value={form.maxPax} readOnly tabIndex={-1} className={`${inputCls} bg-hotel-100/60 dark:bg-dark-bg/80 cursor-default`} />
-                  {form.roomTypeId && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-hotel-400 font-medium">Auto</span>}
-                </div>
-              </div>
+      <SectionCard>
+        <SectionHeading>Basic Information</SectionHeading>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Name</label>
+            <input type="text" value={form.name} onChange={(e) => onFormChange({ name: e.target.value })} placeholder="e.g. Ocean View Deluxe" required className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Room Type</label>
+            <select value={form.roomTypeId} onChange={(e) => {
+              const rt = roomTypes.find((t) => t.id === e.target.value);
+              onFormChange({ roomTypeId: e.target.value, ...(rt ? { maxPax: rt.maxAdults + rt.maxChildren } : {}) });
+            }} required className={inputCls}>
+              <option value="">Select room type</option>
+              {roomTypes.map((rt) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={labelCls}>Price (per night)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-hotel-500 dark:text-hotel-400 font-semibold pointer-events-none">₱</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={priceFocused ? priceInput : (form.price > 0 ? form.price.toLocaleString('en-PH') : '')}
+                onFocus={() => { setPriceFocused(true); setPriceInput(form.price > 0 ? form.price.toString() : ''); }}
+                onBlur={() => { setPriceFocused(false); }}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9.]/g, '');
+                  setPriceInput(raw);
+                  onFormChange({ price: parseFloat(raw) || 0 });
+                }}
+                placeholder="0"
+                className={`${inputCls} pl-9`}
+              />
             </div>
-          </SectionCard>
-
-          <SectionCard>
-            <SectionHeading>Room Specs</SectionHeading>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className={labelCls}>Room Size</label>
-                <div className="relative">
-                  <input type="number" min={0} value={form.roomSize.replace(/[^0-9.]/g, '')} onChange={(e) => onFormChange({ roomSize: e.target.value ? `${e.target.value} m²` : '' })} placeholder="e.g. 35" className={`${inputCls} pr-12`} />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-hotel-400 font-medium pointer-events-none">m²</span>
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>View</label>
-                <select value={form.view} onChange={(e) => onFormChange({ view: e.target.value })} className={inputCls}>
-                  <option value="">Select view</option>
-                  {VIEW_OPTIONS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg border border-hotel-100 dark:border-dark-border p-3 space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-hotel-500 dark:text-hotel-400">Main Bed</p>
-                <div>
-                  <label className={labelCls}>Type</label>
-                  <select value={form.bedType} onChange={(e) => onFormChange({ bedType: e.target.value })} className={inputCls}>
-                    <option value="">Select bed type</option>
-                    {BED_TYPE_OPTIONS.map((bt) => <option key={bt} value={bt}>{bt}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Quantity</label>
-                  <input type="number" min={1} max={10} value={form.bedQty} onChange={(e) => onFormChange({ bedQty: parseInt(e.target.value) || 1 })} className={inputCls} />
-                </div>
-              </div>
-              <div className="rounded-lg border border-dashed border-hotel-200 dark:border-dark-border p-3 space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-hotel-400 dark:text-hotel-500">Extra Bed <span className="text-hotel-300 dark:text-hotel-600 font-normal">(optional)</span></p>
-                <div>
-                  <label className={labelCls}>Type</label>
-                  <select value={form.extraBedType} onChange={(e) => onFormChange({ extraBedType: e.target.value, extraBedQty: e.target.value ? Math.max(form.extraBedQty, 1) : 0 })} className={inputCls}>
-                    <option value="">None</option>
-                    {BED_TYPE_OPTIONS.map((bt) => <option key={bt} value={bt}>{bt}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Quantity</label>
-                  <input type="number" min={0} max={10} value={form.extraBedQty} onChange={(e) => onFormChange({ extraBedQty: parseInt(e.target.value) || 0 })} disabled={!form.extraBedType} className={`${inputCls} ${!form.extraBedType ? 'opacity-50' : ''}`} />
-                </div>
-              </div>
-            </div>
-          </SectionCard>
-
-          <SectionCard>
-            <SectionHeading>Descriptions</SectionHeading>
-            <div className="space-y-4">
-              <div>
-                <label className={labelCls}>Short Description</label>
-                <textarea value={form.description} onChange={(e) => onFormChange({ description: e.target.value })} rows={2} placeholder="Brief summary shown on the room card" className={`${inputCls} resize-none`} />
-              </div>
-              <div>
-                <label className={labelCls}>Full Description</label>
-                <textarea value={form.longDescription} onChange={(e) => onFormChange({ longDescription: e.target.value })} rows={5} placeholder="Detailed description shown in the room detail view" className={`${inputCls} resize-none`} />
-              </div>
-            </div>
-          </SectionCard>
+            {form.price > 0 && !priceFocused && (
+              <p className="text-[11px] text-hotel-400 mt-1">{formatPhp(form.price)} per night</p>
+            )}
+          </div>
         </div>
+      </SectionCard>
 
-        <div className="space-y-5">
-          <SectionCard>
-            <SectionHeading>Amenities</SectionHeading>
-            <ChipSelector
-              options={AMENITY_OPTIONS}
-              columns={3}
-              selected={form.amenities.split(',').map((s) => s.trim()).filter(Boolean)}
-              onChange={(items) => onFormChange({ amenities: items.join(', ') })}
-            />
-          </SectionCard>
-
-          <SectionCard>
-            <SectionHeading>What&apos;s Included</SectionHeading>
-            <ChipSelector
-              options={INCLUSION_OPTIONS}
-              selected={form.inclusions.split(',').map((s) => s.trim()).filter(Boolean)}
-              onChange={(items) => onFormChange({ inclusions: items.join(', ') })}
-            />
-          </SectionCard>
+      <SectionCard>
+        <SectionHeading>Descriptions</SectionHeading>
+        <div className="space-y-4">
+          <div>
+            <label className={labelCls}>Short Description</label>
+            <textarea value={form.description} onChange={(e) => onFormChange({ description: e.target.value })} rows={2} placeholder="Brief summary shown on the room card" className={`${inputCls} resize-none`} />
+          </div>
+          <div>
+            <label className={labelCls}>Full Description</label>
+            <textarea value={form.longDescription} onChange={(e) => onFormChange({ longDescription: e.target.value })} rows={4} placeholder="Detailed description shown in the room detail view" className={`${inputCls} resize-none`} />
+          </div>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Images — full width */}
       <SectionCard>
         <SectionHeading>Images</SectionHeading>
-        <ImageUploadField images={images} onChange={onImagesChange} />
+        <MultiImageUploader images={images} onChange={onImagesChange} />
       </SectionCard>
 
       {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{error}</p>}
@@ -414,7 +192,7 @@ function RoomModal({ room, roomTypes, onSave, onUpdate, onClose }: RoomModalProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-5xl xl:max-w-7xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-dark-card border border-hotel-100 dark:border-dark-border shadow-2xl p-6 lg:p-8">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-dark-card border border-hotel-100 dark:border-dark-border shadow-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${isEdit ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400'}`}>
@@ -462,7 +240,7 @@ interface PreviewData {
 function buildPreview(room: ManagedRoom, roomTypes: RoomType[]): PreviewData {
   const rt = roomTypes.find((t) => t.id === room.roomTypeId);
   const rtName = rt?.name || '';
-  const s = ROOMS.find((r) => r.roomTypeKey === rtName);
+  const perks = rt?.perks || [];
   const AMENITY_TO_FEATURE: Record<string, string> = {
     wifi: 'wifi', coffee: 'coffee', tv: 'tv', bath: 'bath',
     'mini bar': 'minibar', 'room service': 'roomservice',
@@ -472,22 +250,30 @@ function buildPreview(room: ManagedRoom, roomTypes: RoomType[]): PreviewData {
     kitchen: 'kitchen', jacuzzi: 'jacuzzi',
   };
 
-  const features = room.amenities.map((a) => AMENITY_TO_FEATURE[a.toLowerCase()]).filter((f): f is string => !!f);
+  const features = perks
+    .filter((p) => AMENITY_KEYS.has(p.toLowerCase()))
+    .map((p) => AMENITY_TO_FEATURE[p.toLowerCase()])
+    .filter((f): f is string => !!f);
+
+  const inclusions = perks.filter((p) => !AMENITY_KEYS.has(p.toLowerCase()));
 
   return {
     name: room.name,
-    tagline: room.tagline || s?.tagline || rtName || 'Hotel Accommodation',
-    price: room.price > 0 ? room.price : (s?.price || 0),
-    images: room.images.length > 0 ? room.images : (s?.images || ['https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80']),
+    tagline: room.tagline || rtName || 'Hotel Accommodation',
+    price: room.price,
+    images: (() => {
+      const imgs = (room.images || []).filter(Boolean);
+      return imgs.length > 0 ? imgs : ['https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80'];
+    })(),
     specs: [
-      { icon: BedDouble, label: 'Bed', value: room.bedType ? `${room.bedQty || 1} ${room.bedType}${room.extraBedType ? ` + ${room.extraBedQty || 1} ${room.extraBedType}` : ''}` : (s?.specs.find((sp) => sp.label === 'Bed')?.value || '') },
-      { icon: Ruler, label: 'Size', value: room.roomSize || s?.specs.find((sp) => sp.label === 'Size')?.value || '' },
-      { icon: Eye, label: 'View', value: room.view || s?.specs.find((sp) => sp.label === 'View')?.value || '' },
+      { icon: BedDouble, label: 'Bed', value: room.bedType ? `${room.bedQty || 1} ${room.bedType}${room.extraBedType ? ` + ${room.extraBedQty || 1} ${room.extraBedType}` : ''}` : '' },
+      { icon: Ruler, label: 'Size', value: room.roomSize || '' },
+      { icon: Eye, label: 'View', value: room.view || '' },
       { icon: Users, label: 'Capacity', value: `${room.maxPax} Guests` },
     ].filter((sp) => sp.value),
-    longDescription: room.longDescription || s?.longDescription || room.description || '',
-    features: features.length > 0 ? features : (s?.features || []),
-    inclusions: room.inclusions?.length > 0 ? room.inclusions : (s?.inclusions || []),
+    longDescription: room.longDescription || room.description || '',
+    features,
+    inclusions: inclusions.length > 0 ? inclusions : ['Daily housekeeping', 'High-speed WiFi'],
   };
 }
 
@@ -651,8 +437,8 @@ export default function ManageRoomsTab({ rooms, roomTypes, addRoom, updateRoom, 
                         <span className="inline-flex items-center rounded-full bg-hotel-100 dark:bg-hotel-800 px-2 py-0.5 text-[10px] font-semibold text-hotel-600 dark:text-hotel-300">{getRoomTypeName(room.roomTypeId)}</span>
                       </div>
                       <p className="text-xs text-hotel-500 dark:text-hotel-400">
-                        &#8369;{room.price.toLocaleString()}/night &middot; Max {room.maxPax} pax
-                        {room.amenities.length > 0 && <> &middot; {room.amenities.slice(0, 3).join(', ')}{room.amenities.length > 3 ? ` +${room.amenities.length - 3}` : ''}</>}
+                        ₱{room.price.toLocaleString('en-PH')}/night
+                        {(() => { const rt = roomTypes.find((t) => t.id === room.roomTypeId); const perks = rt?.perks || []; return perks.length > 0 ? <> &middot; {perks.slice(0, 3).join(', ')}{perks.length > 3 ? ` +${perks.length - 3}` : ''}</> : null; })()}
                         {room.images.length > 0 && <> &middot; {room.images.length} image{room.images.length !== 1 ? 's' : ''}</>}
                       </p>
                       {room.description && <p className="text-xs text-hotel-400 mt-1 line-clamp-1">{room.description}</p>}

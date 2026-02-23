@@ -1,7 +1,12 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import type { Reservation, DiningReservation, ManagedRoom, RoomType, HotelSettings } from '@/utils/types';
-import type { AdminAccount } from '@/hooks/useAdminAuth';
+import type {
+  Reservation, DiningReservation, ManagedRoom, RoomType, HotelSettings,
+  SiteSettings, NavigationItem, HeroContent, AboutContent,
+  RestaurantItem, SignatureDish, DiningHighlight,
+  AmenityItem, AvailabilityContent, ContactItem, SectionHeaders,
+  AdminAccount,
+} from '@/types';
 
 export interface DbSchema {
   reservations: Reservation[];
@@ -10,6 +15,17 @@ export interface DbSchema {
   roomTypes: RoomType[];
   settings: HotelSettings;
   adminAccounts: AdminAccount[];
+  siteSettings: SiteSettings;
+  navigation: NavigationItem[];
+  heroContent: HeroContent;
+  aboutContent: AboutContent;
+  restaurants: RestaurantItem[];
+  signatureDishes: SignatureDish[];
+  diningHighlights: DiningHighlight[];
+  amenities: AmenityItem[];
+  availabilityContent: AvailabilityContent;
+  contactItems: ContactItem[];
+  sectionHeaders: SectionHeaders;
 }
 
 const DB_PATH = join(process.cwd(), 'db.json');

@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, BedDouble, Users, User, CalendarDays } from 'lucide-react';
-import type { Reservation, RoomType } from '@/utils/types';
-import { getRoomColor } from '@/constants/hotel';
+import type { Reservation, RoomType } from '@/types';
+import { getRoomColor } from '@/utils/room-features';
 import { getColorClasses } from '@/hooks/RoomTypeContext';
 import { DAYS, MONTHS, toDateStr, getCalendarDays, buildReservationMap } from './helpers';
 

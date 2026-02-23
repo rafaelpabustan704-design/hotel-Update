@@ -3,16 +3,20 @@
 import { useState, useEffect } from 'react';
 import { Hotel, Lock, User, XCircle } from 'lucide-react';
 import { inputCls, labelCls } from './shared';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface AdminLoginProps {
-  hotelName: string;
   isAuthenticated: boolean;
   onLogin: (username: string, password: string) => Promise<boolean>;
 }
 
-export default function AdminLogin({ hotelName, isAuthenticated, onLogin }: AdminLoginProps) {
+export default function AdminLogin({ isAuthenticated, onLogin }: AdminLoginProps) {
+  const { siteSettings } = useLandingContent();
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const displayName = siteSettings.name || 'Grand Horizon Hotel & Resort';
+  const shortName = displayName.split(' ').slice(0, 2).join(' ');
+  const subtitle = displayName.split(' ').slice(2).join(' ') || 'Hotel & Resort';
 
   useEffect(() => {
     if (!isAuthenticated) { setLoginForm({ username: '', password: '' }); setLoginError(''); }
@@ -29,10 +33,14 @@ export default function AdminLogin({ hotelName, isAuthenticated, onLogin }: Admi
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gold-600/20 mb-4">
-            <Hotel className="h-8 w-8 text-gold-400" />
+            {siteSettings.logo ? (
+              <img src={siteSettings.logo} alt={displayName} className="h-8 w-8 object-contain" />
+            ) : (
+              <Hotel className="h-8 w-8 text-gold-400" />
+            )}
           </div>
-          <h1 className="font-serif text-3xl font-bold text-white mb-1">{hotelName.split(' ').slice(0, 2).join(' ') || 'Grand Horizon'}</h1>
-          <p className="text-hotel-400 text-sm">Admin Panel</p>
+          <h1 className="font-serif text-3xl font-bold text-white mb-1">{shortName}</h1>
+          <p className="text-hotel-400 text-sm">{subtitle} &mdash; Admin Panel</p>
         </div>
         <div className="rounded-2xl bg-white dark:bg-dark-card shadow-2xl p-8">
           <div className="text-center mb-6">

@@ -1,12 +1,24 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import ClientLayout from '@/components/layout/ClientLayout';
+import { readDb } from '@/lib/db';
 
-export const metadata: Metadata = {
-  title: 'Grand Horizon Hotel & Resort',
-  description:
-    'Experience timeless elegance at Grand Horizon Hotel. Luxury rooms, world-class dining, and unmatched hospitality.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const db = readDb();
+    const name = db.siteSettings?.name || 'Grand Horizon Hotel & Resort';
+    return {
+      title: name,
+      description: `Experience timeless elegance at ${name}. Luxury rooms, world-class dining, and unmatched hospitality.`,
+      icons: db.siteSettings?.favicon ? { icon: db.siteSettings.favicon } : undefined,
+    };
+  } catch {
+    return {
+      title: 'Grand Horizon Hotel & Resort',
+      description: 'Experience timeless elegance at Grand Horizon Hotel. Luxury rooms, world-class dining, and unmatched hospitality.',
+    };
+  }
+}
 
 export default function RootLayout({
   children,

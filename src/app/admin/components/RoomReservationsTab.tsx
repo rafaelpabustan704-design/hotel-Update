@@ -6,7 +6,7 @@ import {
   ClipboardList, ChevronDown, ChevronUp, Filter, ArrowUpDown,
   CheckCircle2, XCircle, X, CalendarRange, LayoutList,
 } from 'lucide-react';
-import type { Reservation, RoomType } from '@/utils/types';
+import type { Reservation, RoomType } from '@/types';
 import { getColorClasses } from '@/hooks/RoomTypeContext';
 import { AdminCalendar } from '@/components/ui/Calendar';
 import { cardCls, inputCls, selectCls, smallLabelCls, getTodayStr, formatDate, formatDateLabel } from './shared';

@@ -3,7 +3,8 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { X, User, Mail, Phone, MessageSquare, Users, Baby, UtensilsCrossed, Clock } from 'lucide-react';
 import { useDiningReservations } from '@/hooks/DiningReservationContext';
-import { RESTAURANT_NAMES, TIME_SLOTS } from '@/constants/hotel';
+import { useLandingContent } from '@/hooks/LandingContentContext';
+import { TIME_SLOTS } from '@/utils/room-features';
 import { DiningPickerCalendar } from '@/components/ui/Calendar';
 
 interface DiningReservationModalProps {
@@ -21,13 +22,15 @@ export default function DiningReservationModal({
   preselectedRestaurant,
 }: DiningReservationModalProps) {
   const { addDiningReservation } = useDiningReservations();
+  const { restaurants } = useLandingContent();
+  const restaurantNames = restaurants.map((r) => r.name);
   const [submitted, setSubmitted] = useState(false);
 
   const [form, setForm] = useState({
     fullName: '',
     email: '',
     phone: '',
-    restaurant: preselectedRestaurant || RESTAURANT_NAMES[0],
+    restaurant: preselectedRestaurant || restaurantNames[0] || '',
     date: '',
     time: '19:00',
     adults: 2,
@@ -63,7 +66,7 @@ export default function DiningReservationModal({
           fullName: '',
           email: '',
           phone: '',
-          restaurant: preselectedRestaurant || RESTAURANT_NAMES[0],
+          restaurant: preselectedRestaurant || restaurantNames[0] || '',
           date: '',
           time: '19:00',
           adults: 2,
@@ -185,7 +188,7 @@ export default function DiningReservationModal({
                     onChange={handleChange}
                     className={inputClass}
                   >
-                    {RESTAURANT_NAMES.map((r) => (
+                    {restaurantNames.map((r) => (
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>

@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react';
 import { CalendarDays, BedDouble, CheckCircle2, XCircle } from 'lucide-react';
 import { useReservations } from '@/hooks/ReservationContext';
 import { useRoomTypes, getColorClasses } from '@/hooks/RoomTypeContext';
-import { useHotelSettings } from '@/hooks/HotelSettingsContext';
+import { useLandingContent } from '@/hooks/LandingContentContext';
+import { useTemplateResolver } from '@/providers/hooks/useTemplateResolver';
 import { CustomerCalendar } from '@/components/ui/Calendar';
 
 interface AvailabilityProps {
@@ -14,7 +15,8 @@ interface AvailabilityProps {
 export default function Availability({ onBookNow }: AvailabilityProps) {
   const { reservations } = useReservations();
   const { roomTypes } = useRoomTypes();
-  const { settings } = useHotelSettings();
+  const { availabilityContent } = useLandingContent();
+  const t = useTemplateResolver();
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
@@ -46,11 +48,10 @@ export default function Availability({ onBookNow }: AvailabilityProps) {
     <section id="availability" className="scroll-mt-20 py-24 bg-hotel-50 dark:bg-dark-bg transition-colors">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600 mb-3">Plan Your Visit</p>
-          <h2 className="font-serif text-4xl font-bold text-hotel-900 dark:text-white mb-4">Check Availability</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gold-600 mb-3">{availabilityContent.sectionLabel || 'Plan Your Visit'}</p>
+          <h2 className="font-serif text-4xl font-bold text-hotel-900 dark:text-white mb-4">{availabilityContent.sectionTitle || 'Check Availability'}</h2>
           <p className="mx-auto max-w-2xl text-hotel-500 dark:text-hotel-400 leading-relaxed">
-            Browse our reservation calendar to find the perfect dates for your stay.
-            Click on any date to see available rooms.
+            {t(availabilityContent.description || 'Browse our reservation calendar to find the perfect dates for your stay.')}
           </p>
         </div>
 
@@ -64,7 +65,7 @@ export default function Availability({ onBookNow }: AvailabilityProps) {
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"><BedDouble className="h-6 w-6" /></div>
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-hotel-900 dark:text-white">{isToday ? "Today's Availability" : 'Availability'}</h3>
+                  <h3 className="font-serif text-lg font-bold text-hotel-900 dark:text-white">{isToday ? (availabilityContent.todayLabel || "Today's Availability") : 'Availability'}</h3>
                   <p className="text-sm text-hotel-500 dark:text-hotel-400">
                     {!isToday && <span className="font-semibold text-hotel-700 dark:text-hotel-300">{formattedTarget} &middot; </span>}
                     <span className="font-semibold text-emerald-600">{totalAvailable}</span> of {totalRooms} rooms available
@@ -96,7 +97,7 @@ export default function Availability({ onBookNow }: AvailabilityProps) {
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400"><CalendarDays className="h-6 w-6" /></div>
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-hotel-900 dark:text-white">Calendar Legend</h3>
+                  <h3 className="font-serif text-lg font-bold text-hotel-900 dark:text-white">{availabilityContent.legendLabel || 'Calendar Legend'}</h3>
                   <p className="text-sm text-hotel-500 dark:text-hotel-400">How to read the calendar</p>
                 </div>
               </div>
@@ -118,9 +119,9 @@ export default function Availability({ onBookNow }: AvailabilityProps) {
             </div>
 
             <div className="flex-1 flex flex-col rounded-2xl bg-gradient-to-br from-hotel-900 to-hotel-800 p-6 text-white">
-              <h3 className="font-serif text-lg font-bold mb-2">Ready to Book?</h3>
-              <p className="text-sm text-hotel-300 mb-5 leading-relaxed">Found your ideal dates? Reserve your room now and experience luxury at {settings.name}.</p>
-              <button onClick={onBookNow} className="mt-auto w-full rounded-xl bg-gold-600 py-3 text-sm font-semibold text-white transition-all hover:bg-gold-500 active:scale-[0.98]">Make a Reservation</button>
+              <h3 className="font-serif text-lg font-bold mb-2">{availabilityContent.readyTitle || 'Ready to Book?'}</h3>
+              <p className="text-sm text-hotel-300 mb-5 leading-relaxed">{t(availabilityContent.readyDescription || 'Found your ideal dates? Reserve your room now and experience luxury at {{hotelName}}.')}</p>
+              <button onClick={onBookNow} className="mt-auto w-full rounded-xl bg-gold-600 py-3 text-sm font-semibold text-white transition-all hover:bg-gold-500 active:scale-[0.98]">{availabilityContent.ctaButtonText || 'Make a Reservation'}</button>
             </div>
           </div>
         </div>

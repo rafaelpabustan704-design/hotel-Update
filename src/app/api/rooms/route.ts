@@ -1,38 +1,21 @@
-import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
-import { randomUUID } from 'crypto';
+import { createCollectionRoutes } from '@/lib/api-helpers';
 
-export async function GET() {
-  const db = readDb();
-  return NextResponse.json(db.rooms);
-}
-
-export async function POST(request: Request) {
-  const data = await request.json();
-  const db = readDb();
-
-  const room = {
-    id: randomUUID(),
-    name: String(data.name ?? ''),
-    roomTypeId: String(data.roomTypeId ?? ''),
-    price: Number(data.price) || 0,
-    maxPax: Number(data.maxPax) || 1,
-    description: String(data.description ?? ''),
-    longDescription: String(data.longDescription ?? ''),
-    tagline: String(data.tagline ?? ''),
-    bedType: String(data.bedType ?? ''),
-    bedQty: Number(data.bedQty) || 1,
-    extraBedType: String(data.extraBedType ?? ''),
-    extraBedQty: Number(data.extraBedQty) || 0,
-    roomSize: String(data.roomSize ?? ''),
-    view: String(data.view ?? ''),
-    amenities: Array.isArray(data.amenities) ? data.amenities.map(String) : [],
-    inclusions: Array.isArray(data.inclusions) ? data.inclusions.map(String) : [],
-    images: Array.isArray(data.images) ? data.images.map(String) : [],
-    createdAt: new Date().toISOString(),
-  };
-
-  db.rooms.push(room);
-  writeDb(db);
-  return NextResponse.json(room, { status: 201 });
-}
+export const { GET, POST } = createCollectionRoutes('rooms', (body) => ({
+  name: String(body.name ?? ''),
+  roomTypeId: String(body.roomTypeId ?? ''),
+  price: Number(body.price) || 0,
+  maxPax: Number(body.maxPax) || 1,
+  description: String(body.description ?? ''),
+  longDescription: String(body.longDescription ?? ''),
+  tagline: String(body.tagline ?? ''),
+  bedType: String(body.bedType ?? ''),
+  bedQty: Number(body.bedQty) || 1,
+  extraBedType: String(body.extraBedType ?? ''),
+  extraBedQty: Number(body.extraBedQty) || 0,
+  roomSize: String(body.roomSize ?? ''),
+  view: String(body.view ?? ''),
+  amenities: Array.isArray(body.amenities) ? body.amenities.map(String) : [],
+  inclusions: Array.isArray(body.inclusions) ? body.inclusions.map(String) : [],
+  images: Array.isArray(body.images) ? body.images.map(String) : [],
+  createdAt: new Date().toISOString(),
+}));

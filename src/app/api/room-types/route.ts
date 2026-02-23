@@ -1,27 +1,11 @@
-import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
-import { randomUUID } from 'crypto';
+import { createCollectionRoutes } from '@/lib/api-helpers';
 
-export async function GET() {
-  const db = readDb();
-  return NextResponse.json(db.roomTypes);
-}
-
-export async function POST(request: Request) {
-  const data = await request.json();
-  const db = readDb();
-
-  const roomType = {
-    id: randomUUID(),
-    name: String(data.name ?? ''),
-    totalRooms: Number(data.totalRooms) || 1,
-    maxAdults: Number(data.maxAdults) || 1,
-    maxChildren: Number(data.maxChildren) || 0,
-    color: String(data.color ?? 'blue'),
-    createdAt: new Date().toISOString(),
-  };
-
-  db.roomTypes.push(roomType);
-  writeDb(db);
-  return NextResponse.json(roomType, { status: 201 });
-}
+export const { GET, POST } = createCollectionRoutes('roomTypes', (body) => ({
+  name: String(body.name ?? ''),
+  totalRooms: Number(body.totalRooms) || 1,
+  maxAdults: Number(body.maxAdults) || 1,
+  maxChildren: Number(body.maxChildren) || 0,
+  color: String(body.color ?? 'blue'),
+  perks: Array.isArray(body.perks) ? body.perks.map(String) : [],
+  createdAt: new Date().toISOString(),
+}));

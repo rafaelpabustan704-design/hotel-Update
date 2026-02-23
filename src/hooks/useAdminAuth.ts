@@ -1,15 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import type { AdminAccount } from '@/types';
 
-export interface AdminAccount {
-  id: string;
-  fullName: string;
-  email: string;
-  username: string;
-  password: string;
-  createdAt: string;
-}
+export type { AdminAccount };
 
 const AUTH_KEY = 'hotel-admin-auth';
 

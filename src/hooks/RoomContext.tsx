@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { ManagedRoom } from '@/utils/types';
+import { createContext, useContext, type ReactNode } from 'react';
+import type { ManagedRoom } from '@/types';
+import { useCrudCollection } from '@/providers/hooks/useCrudResource';
 
 interface RoomContextType {
   rooms: ManagedRoom[];
@@ -13,51 +14,15 @@ interface RoomContextType {
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
 
 export function RoomProvider({ children }: { children: ReactNode }) {
-  const [rooms, setRooms] = useState<ManagedRoom[]>([]);
-
-  useEffect(() => {
-    fetch('/api/rooms')
-      .then((res) => res.json())
-      .then((data) => setRooms(data))
-      .catch(() => {});
-  }, []);
-
-  const addRoom = useCallback((data: Omit<ManagedRoom, 'id' | 'createdAt'>) => {
-    fetch('/api/rooms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((created: ManagedRoom) => {
-        setRooms((prev) => [...prev, created]);
-      })
-      .catch(() => {});
-  }, []);
-
-  const updateRoom = useCallback((id: string, data: Partial<Omit<ManagedRoom, 'id' | 'createdAt'>>) => {
-    fetch(`/api/rooms/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((updated: ManagedRoom) => {
-        setRooms((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      })
-      .catch(() => {});
-  }, []);
-
-  const deleteRoom = useCallback((id: string) => {
-    fetch(`/api/rooms/${id}`, { method: 'DELETE' })
-      .then(() => {
-        setRooms((prev) => prev.filter((r) => r.id !== id));
-      })
-      .catch(() => {});
-  }, []);
+  const { items, add, update, remove } = useCrudCollection<ManagedRoom>({ basePath: '/api/rooms' });
 
   return (
-    <RoomContext.Provider value={{ rooms, addRoom, updateRoom, deleteRoom }}>
+    <RoomContext.Provider value={{
+      rooms: items,
+      addRoom: (data) => { add(data as Omit<ManagedRoom, 'id'>); },
+      updateRoom: (id, data) => { update(id, data); },
+      deleteRoom: (id) => { remove(id); },
+    }}>
       {children}
     </RoomContext.Provider>
   );
@@ -65,8 +30,6 @@ export function RoomProvider({ children }: { children: ReactNode }) {
 
 export function useRooms() {
   const context = useContext(RoomContext);
-  if (!context) {
-    throw new Error('useRooms must be used within a RoomProvider');
-  }
+  if (!context) throw new Error('useRooms must be used within a RoomProvider');
   return context;
 }

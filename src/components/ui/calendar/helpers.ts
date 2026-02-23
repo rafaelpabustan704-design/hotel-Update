@@ -1,4 +1,4 @@
-import type { Reservation, DiningReservation } from '@/utils/types';
+import type { Reservation, DiningReservation } from '@/types';
 
 export const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const MONTHS = [
