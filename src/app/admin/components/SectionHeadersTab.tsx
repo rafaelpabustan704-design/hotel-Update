@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Layers, Save } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import type { SectionHeaders } from '@/types';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   headers: SectionHeaders;
@@ -12,19 +13,25 @@ interface Props {
 }
 
 export default function SectionHeadersTab({ headers, onSave }: Props) {
+  const { setDraftOverride } = useLandingContent();
   const [form, setForm] = useState<SectionHeaders>(headers);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { setForm(headers); }, [headers]);
 
-  const save = async () => {
+  useEffect(() => {
+    setDraftOverride('sectionHeaders', form);
+  }, [form, setDraftOverride]);
+
+  const save = useCallback(async () => {
     setSaving(true);
     await onSave(form);
+    setDraftOverride('sectionHeaders', null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [form, onSave, setDraftOverride]);
 
   const sectionCard = (
     title: string,
@@ -76,6 +83,7 @@ export default function SectionHeadersTab({ headers, onSave }: Props) {
         <div><label className={labelCls}>Description</label><textarea className={`${inputCls} min-h-[80px]`} value={form.amenities.description} onChange={(e) => setForm((p) => ({ ...p, amenities: { ...p.amenities, description: e.target.value } }))} rows={3} /></div>
         <SingleImageUploader
           label="Background Image"
+          preset="hero-banner"
           value={form.amenities.backgroundImage}
           onChange={(url) => setForm((p) => ({ ...p, amenities: { ...p.amenities, backgroundImage: url } }))}
         />

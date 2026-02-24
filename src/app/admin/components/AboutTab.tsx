@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Type, Save, Plus, Trash2, BarChart3 } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import type { AboutContent } from '@/types';
 import IconPicker from './IconPicker';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   aboutContent: AboutContent;
@@ -13,19 +14,25 @@ interface Props {
 }
 
 export default function AboutTab({ aboutContent, onSave }: Props) {
+  const { setDraftOverride } = useLandingContent();
   const [form, setForm] = useState<AboutContent>(aboutContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { setForm(aboutContent); }, [aboutContent]);
 
-  const save = async () => {
+  useEffect(() => {
+    setDraftOverride('aboutContent', form);
+  }, [form, setDraftOverride]);
+
+  const save = useCallback(async () => {
     setSaving(true);
     await onSave(form);
+    setDraftOverride('aboutContent', null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [form, onSave, setDraftOverride]);
 
   return (
     <div className="space-y-6">
@@ -61,6 +68,7 @@ export default function AboutTab({ aboutContent, onSave }: Props) {
             <div key={idx} className="flex items-start gap-3 rounded-xl border border-hotel-100 dark:border-dark-border p-3">
               <SingleImageUploader
                 compact
+                preset="gallery"
                 value={img.src}
                 onChange={(url) => { const imgs = [...form.images]; imgs[idx] = { ...imgs[idx], src: url }; setForm((p) => ({ ...p, images: imgs })); }}
               />

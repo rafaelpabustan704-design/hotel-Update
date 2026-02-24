@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Trash2, GripVertical, Navigation, Save, Pencil, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import type { NavigationItem } from '@/types';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   items: NavigationItem[];
@@ -14,19 +15,38 @@ interface Props {
 }
 
 export default function NavigationTab({ items, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedNavigation } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState({ label: '', href: '' });
   const [adding, setAdding] = useState(false);
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm({ label: '', href: '' }); setAdding(true); setEditing(null); };
   const startEdit = (n: NavigationItem) => { setForm({ label: n.label, href: n.href }); setEditing(n.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveItems = useMemo(() => (adding || editing)
+    ? adding ? [...savedNavigation, { ...form, id: 'draft' } as NavigationItem] : savedNavigation.map((n) => n.id === editing ? { ...n, ...form } : n)
+    : savedNavigation, [savedNavigation, form, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('navigation', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveItems);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('navigation', effectiveItems);
+  }, [adding, editing, effectiveItems, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     if (adding) await onAdd(form);
     else if (editing) await onUpdate(editing, form);
+    setDraftOverride('navigation', null);
     cancel();
-  };
+  }, [form, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>

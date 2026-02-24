@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Pencil, Trash2, UtensilsCrossed, Save, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import ConfirmModal from './ConfirmModal';
 import type { RestaurantItem } from '@/types';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   restaurants: RestaurantItem[];
@@ -17,22 +18,43 @@ interface Props {
 const empty: Omit<RestaurantItem, 'id'> = { name: '', cuisine: '', hours: '', description: '', image: '', tags: [], buttonText: 'Reserve a Table' };
 
 export default function RestaurantsTab({ restaurants, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedRestaurants } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RestaurantItem | null>(null);
   const [tagsInput, setTagsInput] = useState('');
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm(empty); setTagsInput(''); setAdding(true); setEditing(null); };
   const startEdit = (r: RestaurantItem) => { setForm({ name: r.name, cuisine: r.cuisine, hours: r.hours, description: r.description, image: r.image, tags: r.tags, buttonText: r.buttonText }); setTagsInput(r.tags.join(', ')); setEditing(r.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveRestaurants = useMemo(() => (adding || editing)
+    ? adding
+      ? [...savedRestaurants, { ...form, tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean), id: 'draft' } as RestaurantItem]
+      : savedRestaurants.map((r) => r.id === editing ? { ...r, ...form, tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean) } : r)
+    : savedRestaurants, [savedRestaurants, form, tagsInput, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('restaurants', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveRestaurants);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('restaurants', effectiveRestaurants);
+  }, [adding, editing, effectiveRestaurants, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     const data = { ...form, tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean) };
     if (adding) { await onAdd(data); }
     else if (editing) { await onUpdate(editing, data); }
+    setDraftOverride('restaurants', null);
     cancel();
-  };
+  }, [form, tagsInput, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>
@@ -46,7 +68,7 @@ export default function RestaurantsTab({ restaurants, onAdd, onUpdate, onDelete 
         <div><label className={labelCls}>Hours</label><input className={inputCls} value={form.hours} onChange={(e) => setForm((p) => ({ ...p, hours: e.target.value }))} /></div>
         <div><label className={labelCls}>Button Text</label><input className={inputCls} value={form.buttonText} onChange={(e) => setForm((p) => ({ ...p, buttonText: e.target.value }))} /></div>
       </div>
-      <SingleImageUploader label="Image" value={form.image} onChange={(url) => setForm((p) => ({ ...p, image: url }))} />
+      <SingleImageUploader label="Image" preset="gallery" value={form.image} onChange={(url) => setForm((p) => ({ ...p, image: url }))} />
       <div><label className={labelCls}>Description</label><textarea className={`${inputCls} min-h-[80px]`} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} /></div>
       <div><label className={labelCls}>Tags (comma-separated)</label><input className={inputCls} value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="e.g. Seafood, Fine Dining" /></div>
       <button onClick={handleSave} className="flex items-center gap-2 rounded-xl bg-gold-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-gold-700 transition-colors"><Save className="h-4 w-4" />Save</button>

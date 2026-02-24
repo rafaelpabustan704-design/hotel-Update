@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Pencil, Trash2, ChefHat, Save, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import ConfirmModal from './ConfirmModal';
 import type { SignatureDish } from '@/types';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   dishes: SignatureDish[];
@@ -17,20 +18,41 @@ interface Props {
 const empty: Omit<SignatureDish, 'id'> = { image: '', title: '', description: '' };
 
 export default function SignatureDishesTab({ dishes, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedSignatureDishes } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<SignatureDish | null>(null);
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
   const startEdit = (d: SignatureDish) => { setForm({ image: d.image, title: d.title, description: d.description }); setEditing(d.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveDishes = useMemo(() => (adding || editing)
+    ? adding
+      ? [...savedSignatureDishes, { ...form, id: 'draft' } as SignatureDish]
+      : savedSignatureDishes.map((d) => d.id === editing ? { ...d, ...form } : d)
+    : savedSignatureDishes, [savedSignatureDishes, form, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('signatureDishes', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveDishes);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('signatureDishes', effectiveDishes);
+  }, [adding, editing, effectiveDishes, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     if (adding) await onAdd(form);
     else if (editing) await onUpdate(editing, form);
+    setDraftOverride('signatureDishes', null);
     cancel();
-  };
+  }, [form, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>
@@ -40,7 +62,7 @@ export default function SignatureDishesTab({ dishes, onAdd, onUpdate, onDelete }
       </div>
       <div><label className={labelCls}>Title</label><input className={inputCls} value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} /></div>
       <div><label className={labelCls}>Description</label><input className={inputCls} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} /></div>
-      <SingleImageUploader label="Image" value={form.image} onChange={(url) => setForm((p) => ({ ...p, image: url }))} />
+      <SingleImageUploader label="Image" preset="thumbnail" value={form.image} onChange={(url) => setForm((p) => ({ ...p, image: url }))} />
       <button onClick={handleSave} className="flex items-center gap-2 rounded-xl bg-gold-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-gold-700 transition-colors"><Save className="h-4 w-4" />Save</button>
     </div>
   );

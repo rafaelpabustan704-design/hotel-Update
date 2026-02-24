@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, Pencil, Plus, Layers, X, XCircle, Check } from 'lucide-react';
 import type { RoomType } from '@/types';
-import { COLOR_OPTIONS, getColorClasses } from '@/hooks/RoomTypeContext';
+import { COLOR_OPTIONS, getColorClasses, useRoomTypes } from '@/hooks/RoomTypeContext';
 import { cardCls, inputCls, labelCls } from './shared';
 import ConfirmModal from './ConfirmModal';
 
@@ -159,14 +159,22 @@ interface ModalProps {
   onAdd: (data: Omit<RoomType, 'id' | 'createdAt'>) => void;
   onUpdate?: (id: string, data: Partial<Omit<RoomType, 'id' | 'createdAt'>>) => void;
   onClose: () => void;
+  setDraftRoomType: (id: string, data: Partial<RoomType> | null) => void;
 }
 
-function RoomTypeModal({ roomType, onAdd, onUpdate, onClose }: ModalProps) {
+function RoomTypeModal({ roomType, onAdd, onUpdate, onClose, setDraftRoomType }: ModalProps) {
   const isEdit = !!roomType;
   const [name, setName] = useState(isEdit ? roomType.name : '');
   const [color, setColor] = useState(isEdit ? roomType.color : 'blue');
   const [perks, setPerks] = useState<string[]>(isEdit ? (roomType.perks || []) : []);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isEdit && roomType) {
+      setDraftRoomType(roomType.id, { name, color, perks });
+      return () => setDraftRoomType(roomType.id, null);
+    }
+  }, [isEdit, roomType, name, color, perks, setDraftRoomType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,6 +226,7 @@ function RoomTypeModal({ roomType, onAdd, onUpdate, onClose }: ModalProps) {
 /* ─── Main Tab ─── */
 
 export default function RoomTypesTab({ roomTypes, addRoomType, updateRoomType, deleteRoomType }: RoomTypesTabProps) {
+  const { setDraftRoomType } = useRoomTypes();
   const [modalType, setModalType] = useState<RoomType | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -290,6 +299,7 @@ export default function RoomTypesTab({ roomTypes, addRoomType, updateRoomType, d
         <RoomTypeModal
           onAdd={addRoomType}
           onClose={() => setShowAddModal(false)}
+          setDraftRoomType={setDraftRoomType}
         />
       )}
 
@@ -299,6 +309,7 @@ export default function RoomTypesTab({ roomTypes, addRoomType, updateRoomType, d
           onAdd={addRoomType}
           onUpdate={updateRoomType}
           onClose={() => setModalType(null)}
+          setDraftRoomType={setDraftRoomType}
         />
       )}
 

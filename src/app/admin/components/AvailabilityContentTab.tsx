@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CalendarDays, Save, Plus, Trash2 } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import type { AvailabilityContent } from '@/types';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   content: AvailabilityContent;
@@ -11,19 +12,25 @@ interface Props {
 }
 
 export default function AvailabilityContentTab({ content, onSave }: Props) {
+  const { setDraftOverride } = useLandingContent();
   const [form, setForm] = useState<AvailabilityContent>(content);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { setForm(content); }, [content]);
 
-  const save = async () => {
+  useEffect(() => {
+    setDraftOverride('availabilityContent', form);
+  }, [form, setDraftOverride]);
+
+  const save = useCallback(async () => {
     setSaving(true);
     await onSave(form);
+    setDraftOverride('availabilityContent', null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [form, onSave, setDraftOverride]);
 
   return (
     <div className="space-y-6">
