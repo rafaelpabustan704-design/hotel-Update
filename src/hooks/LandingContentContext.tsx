@@ -12,6 +12,26 @@ import {
 } from '@/lib/constants';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
+/** Keys that can have a draft overlay for live preview (unsaved edits). */
+export type LandingDraftSection =
+  | 'siteSettings' | 'navigation' | 'heroContent' | 'aboutContent'
+  | 'restaurants' | 'signatureDishes' | 'diningHighlights' | 'amenities'
+  | 'availabilityContent' | 'contactItems' | 'sectionHeaders';
+
+export type LandingDraftOverrides = Partial<{
+  siteSettings: SiteSettings;
+  navigation: NavigationItem[];
+  heroContent: HeroContent;
+  aboutContent: AboutContent;
+  restaurants: RestaurantItem[];
+  signatureDishes: SignatureDish[];
+  diningHighlights: DiningHighlight[];
+  amenities: AmenityItem[];
+  availabilityContent: AvailabilityContent;
+  contactItems: ContactItem[];
+  sectionHeaders: SectionHeaders;
+}>;
+
 interface LandingContentContextType {
   siteSettings: SiteSettings;
   navigation: NavigationItem[];
@@ -25,6 +45,16 @@ interface LandingContentContextType {
   contactItems: ContactItem[];
   sectionHeaders: SectionHeaders;
 
+  /** Saved (persisted) lists only – use when computing draft to avoid feedback loops. */
+  savedRestaurants: RestaurantItem[];
+  savedSignatureDishes: SignatureDish[];
+  savedDiningHighlights: DiningHighlight[];
+  savedAmenities: AmenityItem[];
+  savedContactItems: ContactItem[];
+  savedNavigation: NavigationItem[];
+
+  /** Set draft for a section (live preview). Pass null to clear. Only persisted on Save. */
+  setDraftOverride: <K extends LandingDraftSection>(section: K, data: LandingDraftOverrides[K] | null) => void;
   refetch: () => Promise<void>;
 
   updateSiteSettings: (data: Partial<SiteSettings>) => Promise<void>;
@@ -74,9 +104,31 @@ export function LandingContentProvider({ children }: { children: ReactNode }) {
   const [availabilityContent, setAvailabilityContent] = useState<AvailabilityContent>(DEFAULT_AVAILABILITY);
   const [contactItems, setContactItems] = useState<ContactItem[]>([]);
   const [sectionHeaders, setSectionHeaders] = useState<SectionHeaders>(DEFAULT_SECTION_HEADERS);
+  const [draftOverrides, setDraftOverrides] = useState<LandingDraftOverrides>({});
   const fetchedOnce = useRef(false);
 
-  useThemeColors(siteSettings);
+  const displaySiteSettings = draftOverrides.siteSettings ?? siteSettings;
+  const displayNavigation = draftOverrides.navigation ?? navigation;
+  const displayHeroContent = draftOverrides.heroContent ?? heroContent;
+  const displayAboutContent = draftOverrides.aboutContent ?? aboutContent;
+  const displayRestaurants = draftOverrides.restaurants ?? restaurants;
+  const displaySignatureDishes = draftOverrides.signatureDishes ?? signatureDishes;
+  const displayDiningHighlights = draftOverrides.diningHighlights ?? diningHighlights;
+  const displayAmenities = draftOverrides.amenities ?? amenities;
+  const displayAvailabilityContent = draftOverrides.availabilityContent ?? availabilityContent;
+  const displayContactItems = draftOverrides.contactItems ?? contactItems;
+  const displaySectionHeaders = draftOverrides.sectionHeaders ?? sectionHeaders;
+
+  useThemeColors(displaySiteSettings);
+
+  const setDraftOverride = useCallback(<K extends LandingDraftSection>(section: K, data: LandingDraftOverrides[K] | null) => {
+    setDraftOverrides((prev) => {
+      const next = { ...prev };
+      if (data == null) delete next[section];
+      else (next as Record<string, unknown>)[section] = data;
+      return next;
+    });
+  }, []);
 
   const applyPayload = useCallback((d: Record<string, unknown>) => {
     if (d.siteSettings) setSiteSettings(d.siteSettings as SiteSettings);
@@ -123,9 +175,24 @@ export function LandingContentProvider({ children }: { children: ReactNode }) {
   const del = useCallback(async (path: string) => { await fetch(path, { method: 'DELETE' }); }, []);
 
   const ctx: LandingContentContextType = {
-    siteSettings, navigation, heroContent, aboutContent,
-    restaurants, signatureDishes, diningHighlights, amenities,
-    availabilityContent, contactItems, sectionHeaders,
+    siteSettings: displaySiteSettings,
+    navigation: displayNavigation,
+    heroContent: displayHeroContent,
+    aboutContent: displayAboutContent,
+    restaurants: displayRestaurants,
+    signatureDishes: displaySignatureDishes,
+    diningHighlights: displayDiningHighlights,
+    amenities: displayAmenities,
+    availabilityContent: displayAvailabilityContent,
+    contactItems: displayContactItems,
+    sectionHeaders: displaySectionHeaders,
+    savedRestaurants: restaurants,
+    savedSignatureDishes: signatureDishes,
+    savedDiningHighlights: diningHighlights,
+    savedAmenities: amenities,
+    savedContactItems: contactItems,
+    savedNavigation: navigation,
+    setDraftOverride,
     refetch,
 
     updateSiteSettings: useCallback(async (data) => setSiteSettings(await put('/api/site-settings', data)), [put]),

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Palette, Globe, Save, Type, RotateCcw, Moon } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import type { SiteSettings } from '@/types';
 import { DEFAULT_SITE_SETTINGS, DARK_THEME_PRESETS } from '@/lib/constants';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   settings: SiteSettings;
@@ -22,19 +23,25 @@ const COLOR_FIELDS: { label: string; key: ColorKey; hint: string }[] = [
 ];
 
 export default function SiteSettingsTab({ settings, onSave }: Props) {
+  const { setDraftOverride } = useLandingContent();
   const [form, setForm] = useState<SiteSettings>(settings);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { setForm(settings); }, [settings]);
 
-  const save = async () => {
+  useEffect(() => {
+    setDraftOverride('siteSettings', form);
+  }, [form, setDraftOverride]);
+
+  const save = useCallback(async () => {
     setSaving(true);
     await onSave(form);
+    setDraftOverride('siteSettings', null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [form, onSave, setDraftOverride]);
 
   const resetColors = () => {
     setForm((p) => ({
@@ -88,11 +95,11 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
           <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Site Name</label><input className={inputCls} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
           <div>
             <label className={labelCls}>Logo</label>
-            <SingleImageUploader compact value={form.logo} onChange={(url) => setForm((p) => ({ ...p, logo: url }))} />
+            <SingleImageUploader compact preset="thumbnail" value={form.logo} onChange={(url) => setForm((p) => ({ ...p, logo: url }))} />
           </div>
           <div>
             <label className={labelCls}>Favicon</label>
-            <SingleImageUploader compact value={form.favicon} onChange={(url) => setForm((p) => ({ ...p, favicon: url }))} accept="image/png,image/x-icon,image/svg+xml" />
+            <SingleImageUploader compact preset="favicon" value={form.favicon} onChange={(url) => setForm((p) => ({ ...p, favicon: url }))} accept="image/png,image/x-icon,image/svg+xml" />
           </div>
           <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Footer Text</label><textarea className={`${inputCls} min-h-[60px]`} value={form.footerText} onChange={(e) => setForm((p) => ({ ...p, footerText: e.target.value }))} rows={2} /></div>
         </div>

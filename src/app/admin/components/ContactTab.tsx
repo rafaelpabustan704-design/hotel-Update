@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Pencil, Trash2, Phone, Save, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import ConfirmModal from './ConfirmModal';
 import type { ContactItem } from '@/types';
 import { resolveIcon } from '@/utils/icons';
 import IconPicker from './IconPicker';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   items: ContactItem[];
@@ -18,21 +19,40 @@ interface Props {
 const empty: Omit<ContactItem, 'id'> = { icon: 'MapPin', title: '', lines: [''] };
 
 export default function ContactTab({ items, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedContactItems } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ContactItem | null>(null);
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
   const startEdit = (c: ContactItem) => { setForm({ icon: c.icon, title: c.title, lines: [...c.lines] }); setEditing(c.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveItems = useMemo(() => (adding || editing)
+    ? adding ? [...savedContactItems, { ...form, id: 'draft' } as ContactItem] : savedContactItems.map((c) => c.id === editing ? { ...c, ...form } : c)
+    : savedContactItems, [savedContactItems, form, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('contactItems', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveItems);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('contactItems', effectiveItems);
+  }, [adding, editing, effectiveItems, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     const data = { ...form, lines: form.lines.filter((l) => l.trim()) };
     if (adding) await onAdd(data);
     else if (editing) await onUpdate(editing, data);
+    setDraftOverride('contactItems', null);
     cancel();
-  };
+  }, [form, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>

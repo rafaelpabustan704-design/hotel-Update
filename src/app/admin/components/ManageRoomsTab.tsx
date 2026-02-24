@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, Pencil, Plus, DoorOpen, XCircle, X, Check, Eye, ChevronLeft, ChevronRight, BedDouble, Users, Ruler } from 'lucide-react';
 
 import type { RoomType, ManagedRoom } from '@/types';
+import { useRooms } from '@/hooks/RoomContext';
 import { FEATURE_ICONS, FEATURE_LABELS } from '@/utils/room-features';
 import { cardCls, inputCls, labelCls } from './shared';
 import { MultiImageUploader } from './ImageUploader';
@@ -125,7 +126,7 @@ function RoomForm({ form, images, roomTypes, error, submitLabel, onFormChange, o
 
       <SectionCard>
         <SectionHeading>Images</SectionHeading>
-        <MultiImageUploader images={images} onChange={onImagesChange} />
+        <MultiImageUploader preset="gallery" images={images} onChange={onImagesChange} />
       </SectionCard>
 
       {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{error}</p>}
@@ -145,9 +146,10 @@ interface RoomModalProps {
   onSave: (data: Omit<ManagedRoom, 'id' | 'createdAt'>) => void;
   onUpdate?: (id: string, data: Partial<Omit<ManagedRoom, 'id' | 'createdAt'>>) => void;
   onClose: () => void;
+  setDraftRoom: (id: string, data: Partial<ManagedRoom> | null) => void;
 }
 
-function RoomModal({ room, roomTypes, onSave, onUpdate, onClose }: RoomModalProps) {
+function RoomModal({ room, roomTypes, onSave, onUpdate, onClose, setDraftRoom }: RoomModalProps) {
   const isEdit = !!room;
   const defaults = isEdit ? getStaticDefaults(room, roomTypes) : {};
   const [form, setForm] = useState(
@@ -173,6 +175,32 @@ function RoomModal({ room, roomTypes, onSave, onUpdate, onClose }: RoomModalProp
   );
   const [images, setImages] = useState<string[]>(isEdit ? [...room.images] : []);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isEdit && room) {
+      const amenitiesArr = form.amenities.split(',').map((a) => a.trim()).filter(Boolean);
+      const inclusionsArr = form.inclusions.split(',').map((a) => a.trim()).filter(Boolean);
+      setDraftRoom(room.id, {
+        name: form.name,
+        roomTypeId: form.roomTypeId,
+        price: form.price,
+        maxPax: form.maxPax,
+        description: form.description,
+        longDescription: form.longDescription,
+        tagline: form.tagline,
+        bedType: form.bedType,
+        bedQty: form.bedQty,
+        extraBedType: form.extraBedType,
+        extraBedQty: form.extraBedType ? form.extraBedQty : 0,
+        roomSize: form.roomSize,
+        view: form.view,
+        amenities: amenitiesArr,
+        inclusions: inclusionsArr,
+        images,
+      });
+      return () => setDraftRoom(room.id, null);
+    }
+  }, [isEdit, room, form, images, setDraftRoom]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -391,6 +419,7 @@ function RoomPreviewModal({ room, roomTypes, onClose }: { room: ManagedRoom; roo
 /* ─── Main Tab ─── */
 
 export default function ManageRoomsTab({ rooms, roomTypes, addRoom, updateRoom, deleteRoom }: ManageRoomsTabProps) {
+  const { setDraftRoom } = useRooms();
   const [modalRoom, setModalRoom] = useState<ManagedRoom | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [previewRoom, setPreviewRoom] = useState<ManagedRoom | null>(null);
@@ -462,6 +491,7 @@ export default function ManageRoomsTab({ rooms, roomTypes, addRoom, updateRoom, 
           roomTypes={roomTypes}
           onSave={addRoom}
           onClose={() => setShowAddModal(false)}
+          setDraftRoom={setDraftRoom}
         />
       )}
 
@@ -473,6 +503,7 @@ export default function ManageRoomsTab({ rooms, roomTypes, addRoom, updateRoom, 
           onSave={addRoom}
           onUpdate={updateRoom}
           onClose={() => setModalRoom(null)}
+          setDraftRoom={setDraftRoom}
         />
       )}
 

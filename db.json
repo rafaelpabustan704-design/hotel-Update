@@ -434,32 +434,28 @@
   "heroContent": {
     "badgeText": "Luxury Redefined",
     "heading": "Experience Timeless Elegance",
-    "description": "Discover unparalleled luxury at {{hotelName}}, where every moment is crafted to perfection. Nestled along the pristine coastline, we offer an extraordinary escape for the discerning traveler.",
+    "description": "Discover refined comfort at {{hotelName}}, where world-class hospitality, ocean-view accommodations, and unforgettable dining create the perfect escape for every season.",
     "backgroundImage": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80",
     "primaryButton": {
-      "text": "Reserve Your Stay",
-      "link": "#booking"
+      "text": "Book Your Stay",
+      "link": "#rooms"
     },
     "secondaryButton": {
       "text": "Reserve a Table",
-      "link": "#dining-booking"
+      "link": "#dining"
     },
     "featureHighlights": [
       {
-        "icon": "ShieldCheck",
-        "label": "Free Cancellation"
+        "icon": "Shield",
+        "label": "Best Rate Guarantee"
       },
       {
-        "icon": "Star",
-        "label": "Best Price Guarantee"
+        "icon": "Sparkles",
+        "label": "5-Star Service"
       },
       {
-        "icon": "CalendarCheck",
-        "label": "Instant Confirmation"
-      },
-      {
-        "icon": "CreditCard",
-        "label": "Secure Payment"
+        "icon": "MapPin",
+        "label": "Prime Seaside Location"
       }
     ]
   },

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Type, MousePointerClick, Sparkles, Save, Plus, Trash2 } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import { SingleImageUploader } from './ImageUploader';
 import type { HeroContent } from '@/types';
 import IconPicker from './IconPicker';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   heroContent: HeroContent;
@@ -13,19 +14,25 @@ interface Props {
 }
 
 export default function HeroTab({ heroContent, onSave }: Props) {
+  const { setDraftOverride } = useLandingContent();
   const [form, setForm] = useState<HeroContent>(heroContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { setForm(heroContent); }, [heroContent]);
 
-  const save = async () => {
+  useEffect(() => {
+    setDraftOverride('heroContent', form);
+  }, [form, setDraftOverride]);
+
+  const save = useCallback(async () => {
     setSaving(true);
     await onSave(form);
+    setDraftOverride('heroContent', null);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
+  }, [form, onSave, setDraftOverride]);
 
   const updateHighlight = (idx: number, field: string, val: string) => {
     setForm((p) => ({
@@ -71,6 +78,7 @@ export default function HeroTab({ heroContent, onSave }: Props) {
           </div>
           <SingleImageUploader
             label="Background Image"
+            preset="hero-banner"
             value={form.backgroundImage}
             onChange={(url) => setForm((p) => ({ ...p, backgroundImage: url }))}
           />

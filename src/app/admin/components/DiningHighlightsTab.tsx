@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Pencil, Trash2, Flame, Save, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import ConfirmModal from './ConfirmModal';
 import type { DiningHighlight } from '@/types';
 import { resolveIcon } from '@/utils/icons';
 import IconPicker from './IconPicker';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   highlights: DiningHighlight[];
@@ -18,20 +19,39 @@ interface Props {
 const empty: Omit<DiningHighlight, 'id'> = { icon: 'Star', title: '', description: '' };
 
 export default function DiningHighlightsTab({ highlights, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedDiningHighlights } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DiningHighlight | null>(null);
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
   const startEdit = (d: DiningHighlight) => { setForm({ icon: d.icon, title: d.title, description: d.description }); setEditing(d.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveHighlights = useMemo(() => (adding || editing)
+    ? adding ? [...savedDiningHighlights, { ...form, id: 'draft' } as DiningHighlight] : savedDiningHighlights.map((h) => h.id === editing ? { ...h, ...form } : h)
+    : savedDiningHighlights, [savedDiningHighlights, form, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('diningHighlights', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveHighlights);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('diningHighlights', effectiveHighlights);
+  }, [adding, editing, effectiveHighlights, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     if (adding) await onAdd(form);
     else if (editing) await onUpdate(editing, form);
+    setDraftOverride('diningHighlights', null);
     cancel();
-  };
+  }, [form, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>

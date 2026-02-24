@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, Pencil, Trash2, Sparkles, Save, X } from 'lucide-react';
 import { cardCls, inputCls, labelCls } from './shared';
 import ConfirmModal from './ConfirmModal';
 import type { AmenityItem } from '@/types';
 import { resolveIcon } from '@/utils/icons';
 import IconPicker from './IconPicker';
+import { useLandingContent } from '@/hooks/LandingContentContext';
 
 interface Props {
   amenities: AmenityItem[];
@@ -18,20 +19,39 @@ interface Props {
 const empty: Omit<AmenityItem, 'id'> = { icon: 'Star', title: '', description: '' };
 
 export default function AmenitiesTab({ amenities, onAdd, onUpdate, onDelete }: Props) {
+  const { setDraftOverride, savedAmenities } = useLandingContent();
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AmenityItem | null>(null);
+  const lastDraftKeyRef = useRef<string>('');
 
   const startAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
   const startEdit = (a: AmenityItem) => { setForm({ icon: a.icon, title: a.title, description: a.description }); setEditing(a.id); setAdding(false); };
   const cancel = () => { setAdding(false); setEditing(null); };
 
-  const handleSave = async () => {
+  const effectiveAmenities = useMemo(() => (adding || editing)
+    ? adding ? [...savedAmenities, { ...form, id: 'draft' } as AmenityItem] : savedAmenities.map((a) => a.id === editing ? { ...a, ...form } : a)
+    : savedAmenities, [savedAmenities, form, adding, editing]);
+
+  useEffect(() => {
+    if (!adding && !editing) {
+      lastDraftKeyRef.current = '';
+      setDraftOverride('amenities', null);
+      return;
+    }
+    const key = JSON.stringify(effectiveAmenities);
+    if (lastDraftKeyRef.current === key) return;
+    lastDraftKeyRef.current = key;
+    setDraftOverride('amenities', effectiveAmenities);
+  }, [adding, editing, effectiveAmenities, setDraftOverride]);
+
+  const handleSave = useCallback(async () => {
     if (adding) await onAdd(form);
     else if (editing) await onUpdate(editing, form);
+    setDraftOverride('amenities', null);
     cancel();
-  };
+  }, [form, adding, editing, onAdd, onUpdate, setDraftOverride]);
 
   const formUI = (
     <div className={`${cardCls} p-6 space-y-4`}>
