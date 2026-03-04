@@ -9,6 +9,8 @@ import {
 import type { Reservation, RoomType } from '@/types';
 import { getColorClasses } from '@/hooks/RoomTypeContext';
 import { AdminCalendar } from '@/components/ui/Calendar';
+import { usePagination } from '@/hooks/usePagination';
+import Pagination from '@/components/ui/Pagination';
 import { cardCls, inputCls, selectCls, smallLabelCls, getTodayStr, formatDate, formatDateLabel } from './shared';
 import ConfirmModal from './ConfirmModal';
 
@@ -85,6 +87,8 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
     });
     return result;
   }, [reservations, search, roomFilter, statusFilter, sortBy, todayStr]);
+
+  const pagination = usePagination({ data: filtered, itemsPerPage: 10 });
 
   const getStatusBadge = (checkIn: string, checkOut: string) => {
     if (checkIn > todayStr) return <span className="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-300">Upcoming</span>;
@@ -173,84 +177,97 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
       {viewMode === 'calendar' && <AdminCalendar reservations={reservations} roomTypes={roomTypes} onDeleteReservation={deleteReservation} onDateSelect={setRoomSelectedDate} />}
 
       {viewMode === 'list' && <div>
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-hotel-400" />
-              <input type="text" placeholder="Search by name, email, phone, or room type..." value={search} onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-12`} />
-              {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-hotel-400 hover:bg-hotel-100 hover:text-hotel-600 transition-colors"><X className="h-3.5 w-3.5" /></button>}
-            </div>
-            <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm transition-all ${showFilters || hasActiveFilters ? 'border-gold-400 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400' : 'border-hotel-200 dark:border-dark-border bg-white dark:bg-dark-card text-hotel-600 dark:text-hotel-300 hover:border-hotel-300'}`}>
-              <Filter className="h-4 w-4" />Filters
-              {hasActiveFilters && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold-600 text-[10px] font-bold text-white">{(roomFilter !== 'All Rooms' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0)}</span>}
-            </button>
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-hotel-400" />
+            <input type="text" placeholder="Search by name, email, phone, or room type..." value={search} onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-12`} />
+            {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-hotel-400 hover:bg-hotel-100 hover:text-hotel-600 transition-colors"><X className="h-3.5 w-3.5" /></button>}
           </div>
+          <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm transition-all ${showFilters || hasActiveFilters ? 'border-gold-400 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400' : 'border-hotel-200 dark:border-dark-border bg-white dark:bg-dark-card text-hotel-600 dark:text-hotel-300 hover:border-hotel-300'}`}>
+            <Filter className="h-4 w-4" />Filters
+            {hasActiveFilters && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold-600 text-[10px] font-bold text-white">{(roomFilter !== 'All Rooms' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0)}</span>}
+          </button>
+        </div>
 
-          {showFilters && (
-            <div className={`mb-6 rounded-xl ${cardCls} p-5`}>
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-hotel-900 dark:text-white flex items-center gap-2"><Filter className="h-4 w-4 text-hotel-400" />Filter & Sort</h4>
-                {hasActiveFilters && <button onClick={clearFilters} className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors flex items-center gap-1"><X className="h-3 w-3" />Clear all</button>}
-              </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div><label className={smallLabelCls}><BedDouble className="h-3.5 w-3.5" />Room Type</label><select value={roomFilter} onChange={(e) => setRoomFilter(e.target.value)} className={selectCls}>{roomFilterOptions.map((t) => <option key={t} value={t}>{t}</option>)}</select></div>
-                <div><label className={smallLabelCls}><CalendarDays className="h-3.5 w-3.5" />Status</label><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className={selectCls}><option value="all">All Statuses</option><option value="upcoming">Upcoming</option><option value="current">Current Stay</option><option value="past">Past</option></select></div>
-                <div><label className={smallLabelCls}><ArrowUpDown className="h-3.5 w-3.5" />Sort By</label><select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className={selectCls}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="checkIn-asc">Check-in (Earliest)</option><option value="checkIn-desc">Check-in (Latest)</option><option value="name-asc">Name (A-Z)</option><option value="guests-desc">Guests (Most)</option></select></div>
-              </div>
+        {showFilters && (
+          <div className={`mb-6 rounded-xl ${cardCls} p-5`}>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-hotel-900 dark:text-white flex items-center gap-2"><Filter className="h-4 w-4 text-hotel-400" />Filter & Sort</h4>
+              {hasActiveFilters && <button onClick={clearFilters} className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors flex items-center gap-1"><X className="h-3 w-3" />Clear all</button>}
             </div>
-          )}
-
-          {(search || hasActiveFilters) && filtered.length > 0 && <p className="mb-4 text-sm text-hotel-500 dark:text-hotel-400">Showing <span className="font-semibold text-hotel-700 dark:text-hotel-200">{filtered.length}</span> of <span className="font-semibold text-hotel-700 dark:text-hotel-200">{reservations.length}</span> reservations</p>}
-
-          {filtered.length === 0 ? (
-            <div className={`${cardCls} p-16 text-center`}>
-              <ClipboardList className="mx-auto h-16 w-16 text-hotel-200 dark:text-hotel-600 mb-4" />
-              <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-2">{reservations.length === 0 ? 'No Reservations Yet' : 'No Results Found'}</h3>
-              <p className="text-hotel-500 dark:text-hotel-400 mb-4">{reservations.length === 0 ? 'Reservations from the booking form will appear here.' : 'Try adjusting your search or filters.'}</p>
-              {(search || hasActiveFilters) && reservations.length > 0 && <button onClick={clearFilters} className="rounded-lg bg-hotel-100 dark:bg-hotel-800 px-4 py-2 text-sm font-medium text-hotel-700 dark:text-hotel-300 transition-colors hover:bg-hotel-200 dark:hover:bg-hotel-700">Clear All Filters</button>}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div><label className={smallLabelCls}><BedDouble className="h-3.5 w-3.5" />Room Type</label><select value={roomFilter} onChange={(e) => setRoomFilter(e.target.value)} className={selectCls}>{roomFilterOptions.map((t) => <option key={t} value={t}>{t}</option>)}</select></div>
+              <div><label className={smallLabelCls}><CalendarDays className="h-3.5 w-3.5" />Status</label><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className={selectCls}><option value="all">All Statuses</option><option value="upcoming">Upcoming</option><option value="current">Current Stay</option><option value="past">Past</option></select></div>
+              <div><label className={smallLabelCls}><ArrowUpDown className="h-3.5 w-3.5" />Sort By</label><select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className={selectCls}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="checkIn-asc">Check-in (Earliest)</option><option value="checkIn-desc">Check-in (Latest)</option><option value="name-asc">Name (A-Z)</option><option value="guests-desc">Guests (Most)</option></select></div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {filtered.map((reservation) => {
-                const isExpanded = expandedId === reservation.id;
-                return (
-                  <div key={reservation.id} className={`${cardCls} overflow-hidden transition-shadow hover:shadow-md`}>
-                    <div className="flex items-center p-5 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : reservation.id)}>
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 font-bold text-sm">{reservation.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2"><h4 className="font-semibold text-hotel-900 dark:text-white truncate">{reservation.fullName}</h4>{getStatusBadge(reservation.checkIn, reservation.checkOut)}</div>
-                          <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{reservation.email}</p>
-                        </div>
-                      </div>
-                      <div className="ml-auto flex items-center gap-6">
-                        <div className="hidden md:flex items-center gap-6 text-sm text-hotel-600 dark:text-hotel-300">
-                          <div className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-hotel-400" />{reservation.roomType}</div>
-                          <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-hotel-400" />{formatDate(reservation.checkIn)}</div>
-                          <div className="flex items-center gap-2"><Users className="h-4 w-4 text-hotel-400" />{reservation.adults + reservation.children}</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(reservation); }} className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
-                          {isExpanded ? <ChevronUp className="h-5 w-5 text-hotel-400" /> : <ChevronDown className="h-5 w-5 text-hotel-400" />}
-                        </div>
+          </div>
+        )}
+
+        {(search || hasActiveFilters) && filtered.length > 0 && <p className="mb-4 text-sm text-hotel-500 dark:text-hotel-400">Showing <span className="font-semibold text-hotel-700 dark:text-hotel-200">{filtered.length}</span> of <span className="font-semibold text-hotel-700 dark:text-hotel-200">{reservations.length}</span> reservations</p>}
+
+        {filtered.length === 0 ? (
+          <div className={`${cardCls} p-16 text-center`}>
+            <ClipboardList className="mx-auto h-16 w-16 text-hotel-200 dark:text-hotel-600 mb-4" />
+            <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-2">{reservations.length === 0 ? 'No Reservations Yet' : 'No Results Found'}</h3>
+            <p className="text-hotel-500 dark:text-hotel-400 mb-4">{reservations.length === 0 ? 'Reservations from the booking form will appear here.' : 'Try adjusting your search or filters.'}</p>
+            {(search || hasActiveFilters) && reservations.length > 0 && <button onClick={clearFilters} className="rounded-lg bg-hotel-100 dark:bg-hotel-800 px-4 py-2 text-sm font-medium text-hotel-700 dark:text-hotel-300 transition-colors hover:bg-hotel-200 dark:hover:bg-hotel-700">Clear All Filters</button>}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {pagination.paginatedData.map((reservation) => {
+              const isExpanded = expandedId === reservation.id;
+              return (
+                <div key={reservation.id} className={`${cardCls} overflow-hidden transition-shadow hover:shadow-md`}>
+                  <div className="flex items-center p-5 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : reservation.id)}>
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 font-bold text-sm">{reservation.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2"><h4 className="font-semibold text-hotel-900 dark:text-white truncate">{reservation.fullName}</h4>{getStatusBadge(reservation.checkIn, reservation.checkOut)}</div>
+                        <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{reservation.email}</p>
                       </div>
                     </div>
-                    {isExpanded && (
-                      <div className="border-t border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 px-5 py-5">
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div className="flex items-start gap-3"><Mail className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Email</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.email}</p></div></div>
-                          <div className="flex items-start gap-3"><Phone className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Phone</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.phone}</p></div></div>
-                          <div className="flex items-start gap-3"><CalendarDays className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Stay Dates</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{formatDate(reservation.checkIn)} &mdash; {formatDate(reservation.checkOut)}</p></div></div>
-                          <div className="flex items-start gap-3"><BedDouble className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Room &amp; Guests</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.roomType} &middot; {reservation.adults} {reservation.adults === 1 ? 'adult' : 'adults'}{reservation.children > 0 && <>, {reservation.children} {reservation.children === 1 ? 'child' : 'children'}</>}</p></div></div>
-                        </div>
-                        {reservation.specialRequests && <div className={`mt-4 rounded-xl p-4 ${cardCls}`}><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider mb-1">Special Requests</p><p className="text-sm text-hotel-700 dark:text-hotel-300">{reservation.specialRequests}</p></div>}
-                        <p className="mt-4 text-xs text-hotel-400">Booked on {new Date(reservation.createdAt).toLocaleString()}</p>
+                    <div className="ml-auto flex items-center gap-6">
+                      <div className="hidden md:flex items-center gap-6 text-sm text-hotel-600 dark:text-hotel-300">
+                        <div className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-hotel-400" />{reservation.roomType}</div>
+                        <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-hotel-400" />{formatDate(reservation.checkIn)}</div>
+                        <div className="flex items-center gap-2"><Users className="h-4 w-4 text-hotel-400" />{reservation.adults + reservation.children}</div>
                       </div>
-                    )}
+                      <div className="flex items-center gap-3">
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(reservation); }} className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
+                        {isExpanded ? <ChevronUp className="h-5 w-5 text-hotel-400" /> : <ChevronDown className="h-5 w-5 text-hotel-400" />}
+                      </div>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  {isExpanded && (
+                    <div className="border-t border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 px-5 py-5">
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="flex items-start gap-3"><Mail className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Email</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.email}</p></div></div>
+                        <div className="flex items-start gap-3"><Phone className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Phone</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.phone}</p></div></div>
+                        <div className="flex items-start gap-3"><CalendarDays className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Stay Dates</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{formatDate(reservation.checkIn)} &mdash; {formatDate(reservation.checkOut)}</p></div></div>
+                        <div className="flex items-start gap-3"><BedDouble className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Room &amp; Guests</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.roomType} &middot; {reservation.adults} {reservation.adults === 1 ? 'adult' : 'adults'}{reservation.children > 0 && <>, {reservation.children} {reservation.children === 1 ? 'child' : 'children'}</>}</p></div></div>
+                      </div>
+                      {reservation.specialRequests && <div className={`mt-4 rounded-xl p-4 ${cardCls}`}><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider mb-1">Special Requests</p><p className="text-sm text-hotel-700 dark:text-hotel-300">{reservation.specialRequests}</p></div>}
+                      <p className="mt-4 text-xs text-hotel-400">Booked on {new Date(reservation.createdAt).toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          onPageChange={pagination.setCurrentPage}
+          itemsPerPage={pagination.itemsPerPage}
+          onItemsPerPageChange={pagination.setItemsPerPage}
+          itemLabel="reservations"
+        />
       </div>}
 
       {deleteTarget && (

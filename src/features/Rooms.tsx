@@ -6,6 +6,8 @@ import { FEATURE_ICONS, FEATURE_LABELS } from '@/utils/room-features';
 import { useRooms } from '@/hooks/RoomContext';
 import { useRoomTypes } from '@/hooks/RoomTypeContext';
 import { useLandingContent } from '@/hooks/LandingContentContext';
+import { usePagination } from '@/hooks/usePagination';
+import Pagination from '@/components/ui/Pagination';
 
 interface RoomDetail {
   id: number | string;
@@ -191,6 +193,8 @@ export default function Rooms({ onBookNow }: RoomsProps) {
     });
   }, [managedRooms, roomTypes]);
 
+  const pagination = usePagination({ data: mergedRooms, itemsPerPage: 3 });
+
   return (
     <section id="rooms" className="scroll-mt-20 py-24 bg-hotel-50 dark:bg-dark-bg transition-colors">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -202,8 +206,8 @@ export default function Rooms({ onBookNow }: RoomsProps) {
           </p>
         </div>
 
-        <div className={`grid gap-8 ${mergedRooms.length === 1 ? 'max-w-md mx-auto' : mergedRooms.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : mergedRooms.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-          {mergedRooms.map((room) => (
+        <div className={`grid gap-8 ${pagination.paginatedData.length === 1 ? 'max-w-md mx-auto' : pagination.paginatedData.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : pagination.paginatedData.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+          {pagination.paginatedData.map((room) => (
             <div key={room.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-card shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer" onClick={() => setSelectedRoom(room)}>
               <div className="relative h-56 overflow-hidden">
                 <img src={room.images[0]} alt={room.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -240,6 +244,17 @@ export default function Rooms({ onBookNow }: RoomsProps) {
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          onPageChange={pagination.setCurrentPage}
+          itemLabel="rooms"
+        />
       </div>
 
       {selectedRoom && <RoomModal room={selectedRoom} onClose={() => setSelectedRoom(null)} onBookNow={onBookNow} />}
