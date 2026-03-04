@@ -27,11 +27,10 @@ export default function AdminSidebar({
     const Icon = tab.icon;
     return (
       <button
-        key={tab.id}
+        key={`sidebar-${tab.section}-${tab.id}`}
         onClick={() => { setActiveTab(tab.id); setMobileSidebarOpen(false); }}
-        className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-          activeTab === tab.id ? 'bg-gold-600 text-white shadow-md shadow-gold-600/25' : 'text-hotel-400 hover:text-white hover:bg-white/10'
-        } ${!sidebarOpen ? 'justify-center' : ''}`}
+        className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-gold-600 text-white shadow-md shadow-gold-600/25' : 'text-hotel-400 hover:text-white hover:bg-white/10'
+          } ${!sidebarOpen ? 'justify-center' : ''}`}
       >
         <Icon className="h-5 w-5 shrink-0" />
         {sidebarOpen && <span className="truncate">{tab.label}</span>}

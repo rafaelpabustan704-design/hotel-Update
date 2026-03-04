@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Hotel, Eye } from 'lucide-react';
 import { useReservations } from '@/hooks/ReservationContext';
 import { useDiningReservations } from '@/hooks/DiningReservationContext';
@@ -31,6 +31,8 @@ import ContactTab from './components/ContactTab';
 import SiteSettingsTab from './components/SiteSettingsTab';
 import NavigationTab from './components/NavigationTab';
 import SectionHeadersTab from './components/SectionHeadersTab';
+import ContactSubmissionsTab from './components/ContactSubmissionsTab';
+import type { ContactSubmission } from '@/types';
 
 export default function AdminPage() {
   const { reservations, deleteReservation } = useReservations();
@@ -46,16 +48,31 @@ export default function AdminPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  // Contact submissions state
+  const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
+  useEffect(() => {
+    fetch('/api/contact-submissions').then((r) => r.json()).then(setContactSubmissions).catch(() => { });
+  }, []);
+  const deleteContactSubmission = useCallback(async (id: string) => {
+    await fetch(`/api/contact-submissions/${id}`, { method: 'DELETE' });
+    setContactSubmissions((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+  const addContactSubmission = useCallback(async (data: Omit<ContactSubmission, 'id'>) => {
+    const res = await fetch('/api/contact-submissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const item = await res.json();
+    setContactSubmissions((prev) => [...prev, item]);
+  }, []);
+
   const getCounts = useCallback((tab: AdminTab): number | undefined => {
     const map: Partial<Record<AdminTab, number>> = {
-      rooms: reservations.length, dining: diningReservations.length,
+      rooms: reservations.length, dining: diningReservations.length, 'contact-submissions': contactSubmissions.length,
       'room-types': roomTypes.length, 'manage-rooms': rooms.length,
       restaurants: lc.restaurants.length, 'signature-dishes': lc.signatureDishes.length,
       'dining-highlights': lc.diningHighlights.length, 'cms-amenities': lc.amenities.length,
       contact: lc.contactItems.length,
     };
     return map[tab];
-  }, [reservations.length, diningReservations.length, roomTypes.length, rooms.length, lc.restaurants.length, lc.signatureDishes.length, lc.diningHighlights.length, lc.amenities.length, lc.contactItems.length]);
+  }, [reservations.length, diningReservations.length, contactSubmissions.length, roomTypes.length, rooms.length, lc.restaurants.length, lc.signatureDishes.length, lc.diningHighlights.length, lc.amenities.length, lc.contactItems.length]);
 
   if (auth.isLoading) {
     return (
@@ -110,6 +127,7 @@ export default function AdminPage() {
           <div className="transition-opacity duration-200">
             {adminTab === 'rooms' && <RoomReservationsTab reservations={reservations} deleteReservation={deleteReservation} roomTypes={roomTypes} />}
             {adminTab === 'dining' && <DiningReservationsTab diningReservations={diningReservations} deleteDiningReservation={deleteDiningReservation} />}
+            {adminTab === 'contact-submissions' && <ContactSubmissionsTab submissions={contactSubmissions} deleteSubmission={deleteContactSubmission} addSubmission={addContactSubmission} />}
             {adminTab === 'room-types' && <RoomTypesTab roomTypes={roomTypes} addRoomType={addRoomType} updateRoomType={updateRoomType} deleteRoomType={deleteRoomType} />}
             {adminTab === 'manage-rooms' && <ManageRoomsTab rooms={rooms} roomTypes={roomTypes} addRoom={addRoom} updateRoom={updateRoom} deleteRoom={deleteRoom} />}
             {adminTab === 'hero' && <HeroTab heroContent={lc.heroContent} onSave={lc.updateHero} />}

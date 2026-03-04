@@ -4,7 +4,7 @@ export type {
   SiteSettings, DarkThemePresetId, NavigationItem, HeroButton, HeroFeatureHighlight, HeroContent,
   AboutImage, AboutStat, AboutContent,
   RestaurantItem, SignatureDish, DiningHighlight, AmenityItem,
-  AvailabilityContent, ContactItem,
+  AvailabilityContent, ContactItem, ContactSubmission,
   SectionHeaderGroup, DiningSectionHeaders, AmenitiesSectionHeaders, SectionHeaders,
 } from './cms';
 export type { AdminAccount, HotelSettings } from './admin';

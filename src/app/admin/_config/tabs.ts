@@ -1,12 +1,12 @@
 import {
   BedDouble, UtensilsCrossed, Layers, DoorOpen,
   Sparkles, Image, ChefHat, Flame, CalendarDays,
-  Phone, Palette, Navigation, Globe, Users, Settings,
+  Phone, Palette, Navigation, Globe, Users, Settings, MessageSquare,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type AdminTab =
-  | 'rooms' | 'dining'
+  | 'rooms' | 'dining' | 'contact-submissions'
   | 'room-types' | 'manage-rooms'
   | 'hero' | 'about' | 'restaurants' | 'signature-dishes'
   | 'dining-highlights' | 'cms-amenities' | 'availability-content' | 'contact'
@@ -24,13 +24,14 @@ export interface TabMeta {
 export const TABS: TabMeta[] = [
   { id: 'rooms', label: 'Room Reservations', title: 'Room Reservations', description: 'View and manage all room reservations', icon: BedDouble, section: 'reservations' },
   { id: 'dining', label: 'Dining Reservations', title: 'Dining Reservations', description: 'View and manage all table reservations', icon: UtensilsCrossed, section: 'reservations' },
+  { id: 'contact-submissions', label: 'Customer Inquiries', title: 'Customer Inquiries', description: 'View messages from the contact form and phone calls', icon: MessageSquare, section: 'reservations' },
 
   { id: 'room-types', label: 'Room Types', title: 'Room Types', description: 'Create and manage room type categories', icon: Layers, section: 'management' },
   { id: 'manage-rooms', label: 'Rooms', title: 'Rooms', description: 'Manage individual rooms and their details', icon: DoorOpen, section: 'management' },
 
   { id: 'hero', label: 'Hero Section', title: 'Hero Section', description: 'Configure the hero banner content', icon: Sparkles, section: 'landing' },
   { id: 'about', label: 'About Section', title: 'About Section', description: 'Edit the About section text, images, and stats', icon: Image, section: 'landing' },
-  { id: 'restaurants', label: 'Restaurants', title: 'Restaurants', description: 'Manage restaurant cards shown on the landing page', icon: UtensilsCrossed, section: 'landing' },
+  { id: 'restaurants', label: 'Restaurants', title: 'Restaurants', description: 'Manage restaurant cards shown on the landing page', icon: UtensilsCrossed, section: 'management' },
   { id: 'signature-dishes', label: 'Signature Dishes', title: 'Signature Dishes', description: 'Manage the signature dishes slider', icon: ChefHat, section: 'landing' },
   { id: 'dining-highlights', label: 'Why Dine With Us', title: 'Why Dine With Us', description: 'Manage the "Why Dine With Us" feature cards', icon: Flame, section: 'landing' },
   { id: 'cms-amenities', label: 'Amenities', title: 'Amenities', description: 'Manage amenity cards', icon: Sparkles, section: 'landing' },

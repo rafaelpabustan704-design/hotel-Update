@@ -4,7 +4,7 @@ import type {
   Reservation, DiningReservation, ManagedRoom, RoomType, HotelSettings,
   SiteSettings, NavigationItem, HeroContent, AboutContent,
   RestaurantItem, SignatureDish, DiningHighlight,
-  AmenityItem, AvailabilityContent, ContactItem, SectionHeaders,
+  AmenityItem, AvailabilityContent, ContactItem, ContactSubmission, SectionHeaders,
   AdminAccount,
 } from '@/types';
 
@@ -25,6 +25,7 @@ export interface DbSchema {
   amenities: AmenityItem[];
   availabilityContent: AvailabilityContent;
   contactItems: ContactItem[];
+  contactSubmissions: ContactSubmission[];
   sectionHeaders: SectionHeaders;
 }
 

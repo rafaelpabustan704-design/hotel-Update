@@ -110,6 +110,17 @@ export interface ContactItem {
   lines: string[];
 }
 
+export interface ContactSubmission {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  source: 'form' | 'phone';
+  createdAt: string;
+}
+
 export interface SectionHeaderGroup {
   label: string;
   title: string;
