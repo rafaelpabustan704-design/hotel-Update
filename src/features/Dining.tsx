@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { UtensilsCrossed, Clock, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import { useLandingContent } from '@/hooks/LandingContentContext';
 import { resolveIcon } from '@/utils/icons';
+import { usePagination } from '@/hooks/usePagination';
+import Pagination from '@/components/ui/Pagination';
 
 interface DiningProps {
   onReserveTable?: (restaurant: string) => void;
@@ -12,6 +14,8 @@ interface DiningProps {
 export default function Dining({ onReserveTable }: DiningProps) {
   const { restaurants, signatureDishes, diningHighlights, sectionHeaders } = useLandingContent();
   const dH = sectionHeaders.dining;
+
+  const pagination = usePagination({ data: restaurants, itemsPerPage: 3 });
 
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -54,9 +58,8 @@ export default function Dining({ onReserveTable }: DiningProps) {
                 {signatureDishes.map((item, i) => (
                   <div
                     key={item.id}
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                      i === current ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
-                    }`}
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${i === current ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+                      }`}
                   >
                     {item.image && <img src={item.image} alt={item.title} loading="lazy" className="h-full w-full object-cover" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -107,8 +110,8 @@ export default function Dining({ onReserveTable }: DiningProps) {
         </div>
 
         {/* Restaurant cards */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          {restaurants.map((r) => (
+        <div className="grid lg:grid-cols-3 gap-8 mb-6">
+          {pagination.paginatedData.map((r) => (
             <div key={r.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-bg border border-hotel-100 dark:border-dark-border shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
               <div className="relative h-56 overflow-hidden">
                 {r.image && <img src={r.image} alt={r.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />}
@@ -137,6 +140,19 @@ export default function Dining({ onReserveTable }: DiningProps) {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="mb-16">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalItems}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            onPageChange={pagination.setCurrentPage}
+            itemLabel="restaurants"
+          />
         </div>
 
         {/* Highlights banner */}
