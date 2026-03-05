@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import type { Reservation, DiningReservation } from '@/types';
 import { Hotel, Eye } from 'lucide-react';
 import { useReservations } from '@/hooks/ReservationContext';
 import { useDiningReservations } from '@/hooks/DiningReservationContext';
@@ -37,6 +38,35 @@ import type { ContactSubmission } from '@/types';
 export default function AdminPage() {
   const { reservations, deleteReservation } = useReservations();
   const { diningReservations, deleteDiningReservation } = useDiningReservations();
+
+  // Archived reservations state
+  const [archivedReservations, setArchivedReservations] = useState<Reservation[]>([]);
+  const [archivedDiningReservations, setArchivedDiningReservations] = useState<DiningReservation[]>([]);
+
+  useEffect(() => {
+    fetch('/api/reservations/archive').then((r) => r.json()).then(setArchivedReservations).catch(() => { });
+    fetch('/api/dining-reservations/archive').then((r) => r.json()).then(setArchivedDiningReservations).catch(() => { });
+  }, []);
+
+  const archivePastReservations = useCallback(async () => {
+    const res = await fetch('/api/reservations/archive', { method: 'POST' });
+    if (res.ok) {
+      // Refetch both active (via context reload) and archived
+      const archived = await fetch('/api/reservations/archive').then((r) => r.json());
+      setArchivedReservations(archived);
+      // Force a page-level refresh of reservations by reloading
+      window.location.reload();
+    }
+  }, []);
+
+  const archivePastDiningReservations = useCallback(async () => {
+    const res = await fetch('/api/dining-reservations/archive', { method: 'POST' });
+    if (res.ok) {
+      const archived = await fetch('/api/dining-reservations/archive').then((r) => r.json());
+      setArchivedDiningReservations(archived);
+      window.location.reload();
+    }
+  }, []);
   const { roomTypes, addRoomType, updateRoomType, deleteRoomType } = useRoomTypes();
   const { rooms, addRoom, updateRoom, deleteRoom } = useRooms();
   const { theme, toggleTheme } = useTheme();
@@ -50,8 +80,22 @@ export default function AdminPage() {
 
   // Contact submissions state
   const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
+  const [archivedContactSubmissions, setArchivedContactSubmissions] = useState<ContactSubmission[]>([]);
   useEffect(() => {
-    fetch('/api/contact-submissions').then((r) => r.json()).then(setContactSubmissions).catch(() => { });
+    // Auto-archive inquiries older than 14 days, then fetch both lists
+    fetch('/api/contact-submissions/archive', { method: 'POST' })
+      .then(() => Promise.all([
+        fetch('/api/contact-submissions').then((r) => r.json()),
+        fetch('/api/contact-submissions/archive').then((r) => r.json()),
+      ]))
+      .then(([active, archived]) => {
+        setContactSubmissions(active);
+        setArchivedContactSubmissions(archived);
+      })
+      .catch(() => {
+        // Fallback: just fetch active
+        fetch('/api/contact-submissions').then((r) => r.json()).then(setContactSubmissions).catch(() => { });
+      });
   }, []);
   const deleteContactSubmission = useCallback(async (id: string) => {
     await fetch(`/api/contact-submissions/${id}`, { method: 'DELETE' });
@@ -125,9 +169,9 @@ export default function AdminPage() {
           </div>
 
           <div className="transition-opacity duration-200">
-            {adminTab === 'rooms' && <RoomReservationsTab reservations={reservations} deleteReservation={deleteReservation} roomTypes={roomTypes} />}
-            {adminTab === 'dining' && <DiningReservationsTab diningReservations={diningReservations} deleteDiningReservation={deleteDiningReservation} />}
-            {adminTab === 'contact-submissions' && <ContactSubmissionsTab submissions={contactSubmissions} deleteSubmission={deleteContactSubmission} addSubmission={addContactSubmission} />}
+            {adminTab === 'rooms' && <RoomReservationsTab reservations={reservations} deleteReservation={deleteReservation} roomTypes={roomTypes} archivedReservations={archivedReservations} onArchivePast={archivePastReservations} />}
+            {adminTab === 'dining' && <DiningReservationsTab diningReservations={diningReservations} deleteDiningReservation={deleteDiningReservation} archivedDiningReservations={archivedDiningReservations} onArchivePast={archivePastDiningReservations} />}
+            {adminTab === 'contact-submissions' && <ContactSubmissionsTab submissions={contactSubmissions} deleteSubmission={deleteContactSubmission} addSubmission={addContactSubmission} archivedSubmissions={archivedContactSubmissions} />}
             {adminTab === 'room-types' && <RoomTypesTab roomTypes={roomTypes} addRoomType={addRoomType} updateRoomType={updateRoomType} deleteRoomType={deleteRoomType} />}
             {adminTab === 'manage-rooms' && <ManageRoomsTab rooms={rooms} roomTypes={roomTypes} addRoom={addRoom} updateRoom={updateRoom} deleteRoom={deleteRoom} />}
             {adminTab === 'hero' && <HeroTab heroContent={lc.heroContent} onSave={lc.updateHero} />}

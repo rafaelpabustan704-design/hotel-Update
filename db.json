@@ -1,6 +1,335 @@
 {
-  "reservations": [],
+  "reservations": [
+    {
+      "id": "aa45a340-a881-4c20-af43-6312cbe4a1f6",
+      "fullName": "asdasd",
+      "email": "janzen01@yahoo.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-13",
+      "roomType": "Executive Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:25:14.670Z"
+    },
+    {
+      "id": "fd16e93b-f321-4a6e-9c9a-7b8cdb3183cd",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-13",
+      "roomType": "Presidential Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:25:27.104Z"
+    },
+    {
+      "id": "a3270601-655a-4557-83ca-d82ab43d50ec",
+      "fullName": "jonh",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-20",
+      "roomType": "Presidential Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:25:40.762Z"
+    },
+    {
+      "id": "f0490a81-be89-4855-8d40-3c37ad789e6f",
+      "fullName": "rafael",
+      "email": "janzen01@yahoo.com",
+      "phone": "051561651651",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-20",
+      "roomType": "Executive Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:25:53.199Z"
+    },
+    {
+      "id": "3c41f59b-8a2a-496e-afa3-1b915ace641e",
+      "fullName": "jonh",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-11",
+      "checkOut": "2026-03-20",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:26:00.902Z"
+    },
+    {
+      "id": "ebfdd7a3-bd8c-485b-9182-7ed6360df6fc",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-12",
+      "checkOut": "2026-03-21",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:26:09.421Z"
+    },
+    {
+      "id": "dd05580e-08cc-49d9-bd42-ff7f2c2f1805",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-10",
+      "checkOut": "2026-03-28",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:26:18.097Z"
+    },
+    {
+      "id": "8ad59763-42a2-4b3d-8758-d018af154988",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-10",
+      "checkOut": "2026-03-28",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:26:25.862Z"
+    },
+    {
+      "id": "8fc10351-0044-41f5-a78b-b71611f9e694",
+      "fullName": "rafae",
+      "email": "janzen01@yahoo.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-09",
+      "checkOut": "2026-03-26",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:26:55.908Z"
+    },
+    {
+      "id": "84bb20d1-d338-4b02-830e-c72c55683b8a",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-09",
+      "checkOut": "2026-03-27",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:27:04.753Z"
+    },
+    {
+      "id": "8edf88f0-1bef-4890-8678-e43f079d4f02",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-16",
+      "checkOut": "2026-03-28",
+      "roomType": "Executive Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:27:22.883Z"
+    },
+    {
+      "id": "e279dbb7-3825-4bfe-ba45-dac66b2351b9",
+      "fullName": "jonh",
+      "email": "janzen01@yahoo.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-16",
+      "checkOut": "2026-03-31",
+      "roomType": "Presidential Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:27:35.187Z"
+    },
+    {
+      "id": "94e52f52-8106-4e9b-9fce-b63691d03233",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "checkIn": "2026-03-25",
+      "checkOut": "2026-03-28",
+      "roomType": "Presidential Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:27:48.014Z"
+    },
+    {
+      "id": "2295364f-9606-4824-b761-a3bfc8e997ba",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-15",
+      "checkOut": "2026-03-31",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:27:55.491Z"
+    },
+    {
+      "id": "72eeef6a-fa44-4555-aa7b-2e03ac85acde",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-15",
+      "checkOut": "2026-03-31",
+      "roomType": "Deluxe Room",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T02:28:03.259Z"
+    },
+    {
+      "id": "d2076949-9ed4-42b3-834f-9c35b36d6f22",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-17",
+      "checkOut": "2026-03-31",
+      "roomType": "sample",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T03:37:25.866Z"
+    }
+  ],
   "diningReservations": [
+    {
+      "id": "151dece4-67ef-43ea-b142-d498298a1faf",
+      "fullName": "jonh",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "restaurant": "Sakura Garden",
+      "date": "2026-03-11",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:34:24.757Z"
+    },
+    {
+      "id": "1c7266ce-3297-4afe-9f48-e127e393b804",
+      "fullName": "Rafael Pabustan",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "restaurant": "La Dolce Vita",
+      "date": "2026-03-17",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:34:32.708Z"
+    },
+    {
+      "id": "7f9cdf27-2854-4931-b367-94e21c764e2e",
+      "fullName": "rafae",
+      "email": "epiccatchai@gmail.com",
+      "phone": "65465465",
+      "restaurant": "Sakura Garden",
+      "date": "2026-03-25",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:34:41.804Z"
+    },
+    {
+      "id": "7c9c48be-75fa-4dde-875e-0fc15fb7c18b",
+      "fullName": "jonh",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "restaurant": "The Ocean Terrace",
+      "date": "2026-03-23",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:34:49.363Z"
+    },
+    {
+      "id": "e5c33579-0eb8-4916-bca0-443079c4caa2",
+      "fullName": "rafael Guray",
+      "email": "epiccatchai@gmail.com",
+      "phone": "6578989678",
+      "restaurant": "sample",
+      "date": "2026-03-24",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:34:59.791Z"
+    },
+    {
+      "id": "0137c00a-282b-4b5e-8f95-82fd79db5233",
+      "fullName": "Rafael Pabustan",
+      "email": "janzen01@yahoo.com",
+      "phone": "051561651651",
+      "restaurant": "sample",
+      "date": "2026-03-31",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:35:09.908Z"
+    },
+    {
+      "id": "0e2e85c1-0f18-4a55-b3f4-f2696e2f7947",
+      "fullName": "jonh",
+      "email": "janzen01@yahoo.com",
+      "phone": "051561651651",
+      "restaurant": "sample",
+      "date": "2026-03-17",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:35:22.194Z"
+    },
+    {
+      "id": "4fa4bca2-3e1c-4d34-9305-94508e42e49a",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "restaurant": "sample",
+      "date": "2026-03-19",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:35:29.113Z"
+    },
+    {
+      "id": "184d7079-b01f-4a87-b204-acd4ee1de223",
+      "fullName": "rafae",
+      "email": "janzen01@yahoo.com",
+      "phone": "6578989678",
+      "restaurant": "Sakura Garden",
+      "date": "2026-03-24",
+      "time": "19:00",
+      "adults": 2,
+      "children": 0,
+      "specialRequests": "",
+      "createdAt": "2026-03-05T04:35:36.277Z"
+    }
+  ],
+  "archivedReservations": [],
+  "archivedDiningReservations": [
     {
       "id": "5b71bf1d-4719-4dca-81ad-ff93f5e26205",
       "fullName": "sample4",
@@ -163,7 +492,7 @@
     {
       "id": "990e6dd3-c990-4758-aa32-4d1abf7d8bec",
       "name": "sample",
-      "roomTypeId": "rt-deluxe",
+      "roomTypeId": "5166a3a1-7477-4e1a-b891-0cce3e939225",
       "price": 46546,
       "maxPax": 4,
       "description": "sample",
@@ -177,7 +506,10 @@
       "view": "",
       "amenities": [],
       "inclusions": [],
-      "images": [],
+      "images": [
+        "/uploads/e8193355-47ef-433d-82ce-38da2a38c89b.jpg",
+        "/uploads/58b07b44-6271-4851-ade1-7f39747f068d.jpg"
+      ],
       "createdAt": "2026-03-04T02:47:27.134Z"
     }
   ],
@@ -268,6 +600,29 @@
         "Late checkout guaranteed"
       ],
       "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "5166a3a1-7477-4e1a-b891-0cce3e939225",
+      "name": "sample",
+      "totalRooms": 1,
+      "maxAdults": 2,
+      "maxChildren": 2,
+      "color": "pink",
+      "perks": [
+        "WiFi",
+        "Bath",
+        "Air Conditioning",
+        "Butler Service",
+        "Kitchen",
+        "Daily breakfast buffet",
+        "Access to fitness center",
+        "Executive Lounge access",
+        "High-speed WiFi",
+        "Turndown service",
+        "Late checkout (subject to availability)",
+        "Nespresso machine & premium minibar"
+      ],
+      "createdAt": "2026-03-05T03:36:54.040Z"
     }
   ],
   "settings": {
@@ -471,7 +826,7 @@
       "cuisine": "sample",
       "hours": "sample",
       "description": "sample",
-      "image": "",
+      "image": "/uploads/4e275ae2-5ae4-4456-bfa9-943e5223b44a.jfif",
       "tags": [
         "seafood"
       ],
@@ -680,8 +1035,79 @@
       "message": "wet",
       "source": "form",
       "createdAt": "2026-03-04T05:41:16.009Z"
+    },
+    {
+      "id": "0c920771-cdc8-4d8c-9e47-3ea9ff33f11a",
+      "fullName": "Rafael Pabustan",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "subject": "Hotel",
+      "message": "big",
+      "source": "form",
+      "createdAt": "2026-03-05T03:39:50.247Z"
+    },
+    {
+      "id": "f0bae286-b4d1-4e50-8669-02b67f5f1947",
+      "fullName": "lovely",
+      "email": "lovely@gmail.com",
+      "phone": "546846849864",
+      "subject": "Hotel",
+      "message": "big",
+      "source": "form",
+      "createdAt": "2026-03-05T03:40:07.568Z"
+    },
+    {
+      "id": "32b09c21-bb07-4dfd-9bcd-d7ab9596ba96",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "subject": "Hotel",
+      "message": "hotel",
+      "source": "phone",
+      "createdAt": "2026-03-05T03:40:27.866Z"
+    },
+    {
+      "id": "a6260fca-9161-40f3-a4a8-7eaeee027a2e",
+      "fullName": "rafael Guray",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "subject": "Hotel",
+      "message": "FOOD",
+      "source": "phone",
+      "createdAt": "2026-03-05T03:40:48.946Z"
+    },
+    {
+      "id": "a78a3030-d390-4986-855e-7432c19d4e9f",
+      "fullName": "Renalla",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "subject": "Hotel",
+      "message": "Good Food",
+      "source": "phone",
+      "createdAt": "2026-03-05T03:41:09.528Z"
+    },
+    {
+      "id": "2515a371-0e1c-49ab-a080-670cd330931b",
+      "fullName": "Ranni",
+      "email": "epiccatchai@gmail.com",
+      "phone": "6578989678",
+      "subject": "Hotel",
+      "message": "FOOD 8",
+      "source": "phone",
+      "createdAt": "2026-03-05T03:41:25.831Z"
+    },
+    {
+      "id": "5ef214d3-e000-4215-8cde-98d4b24d497a",
+      "fullName": "Radahn",
+      "email": "epiccatchai@gmail.com",
+      "phone": "54654654",
+      "subject": "Hotel",
+      "message": "Horse Meat",
+      "source": "phone",
+      "createdAt": "2026-03-05T03:41:49.244Z"
     }
   ],
+  "archivedContactSubmissions": [],
   "sectionHeaders": {
     "rooms": {
       "label": "Accommodations",

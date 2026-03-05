@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Check, BedDouble, Users, Ruler, Eye } from 'lucide-react';
 import { FEATURE_ICONS, FEATURE_LABELS } from '@/utils/room-features';
 import { useRooms } from '@/hooks/RoomContext';
 import { useRoomTypes } from '@/hooks/RoomTypeContext';
 import { useLandingContent } from '@/hooks/LandingContentContext';
-import { usePagination } from '@/hooks/usePagination';
-import Pagination from '@/components/ui/Pagination';
 
 interface RoomDetail {
   id: number | string;
@@ -193,7 +191,37 @@ export default function Rooms({ onBookNow }: RoomsProps) {
     });
   }, [managedRooms, roomTypes]);
 
-  const pagination = usePagination({ data: mergedRooms, itemsPerPage: 3 });
+  // Carousel state: show 3 items at a time, loop/wrap around
+  const itemsPerPage = 3;
+  const totalItems = mergedRooms.length;
+  const needsCarousel = totalItems > itemsPerPage;
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [carouselPaused, setCarouselPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const goToNext = useCallback(() => {
+    setCarouselIndex((prev) => (prev + 1) % totalItems);
+  }, [totalItems]);
+
+  useEffect(() => {
+    if (!needsCarousel || carouselPaused) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
+      return;
+    }
+    timerRef.current = setInterval(goToNext, 4000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [needsCarousel, carouselPaused, goToNext]);
+
+  // Reset index if data length changes
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [totalItems]);
+
+  // Build visible items with wrapping
+  const visibleRooms = needsCarousel
+    ? Array.from({ length: itemsPerPage }, (_, i) => mergedRooms[(carouselIndex + i) % totalItems])
+    : mergedRooms;
 
   return (
     <section id="rooms" className="scroll-mt-20 py-24 bg-hotel-50 dark:bg-dark-bg transition-colors">
@@ -206,55 +234,62 @@ export default function Rooms({ onBookNow }: RoomsProps) {
           </p>
         </div>
 
-        <div className={`grid gap-8 ${pagination.paginatedData.length === 1 ? 'max-w-md mx-auto' : pagination.paginatedData.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : pagination.paginatedData.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-          {pagination.paginatedData.map((room) => (
-            <div key={room.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-card shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer" onClick={() => setSelectedRoom(room)}>
-              <div className="relative h-56 overflow-hidden">
-                <img src={room.images[0]} alt={room.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                <div className="absolute top-4 right-4 rounded-full bg-white/95 dark:bg-dark-card/95 backdrop-blur-sm px-4 py-1.5 text-sm font-bold text-hotel-900 dark:text-white shadow-md">
-                  &#8369;{room.price.toLocaleString()}<span className="text-hotel-400 font-normal">/night</span>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-300">
-                  <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-hotel-900 shadow-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">View Details</span>
-                </div>
-              </div>
-              <div className="flex flex-col flex-1 p-6">
-                <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-1 truncate">{room.name}</h3>
-                <p className="text-xs text-gold-600 font-medium mb-3 truncate">{room.tagline}</p>
-                <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5 line-clamp-2">{room.description}</p>
-                <div className="mt-auto">
-                  <div className="flex flex-wrap items-center gap-2 mb-6 h-[4.25rem] overflow-hidden">
-                    {room.features.slice(0, 6).map((feature) => {
-                      const Icon = FEATURE_ICONS[feature];
-                      if (!Icon) return null;
-                      return (
-                        <div key={feature} className="flex items-center gap-1.5 rounded-full bg-hotel-50 dark:bg-dark-bg px-3 py-1.5 text-hotel-600 dark:text-hotel-300">
-                          <Icon className="h-3.5 w-3.5" /><span className="text-xs font-medium">{FEATURE_LABELS[feature]}</span>
-                        </div>
-                      );
-                    })}
-                    {room.features.length > 6 && (
-                      <span className="text-xs text-hotel-400 font-medium">+{room.features.length - 6} more</span>
-                    )}
+        <div
+          onMouseEnter={() => setCarouselPaused(true)}
+          onMouseLeave={() => setCarouselPaused(false)}
+        >
+          <div key={carouselIndex} className={`animate-carousel-slide grid gap-8 ${visibleRooms.length === 1 ? 'max-w-md mx-auto' : visibleRooms.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+            {visibleRooms.map((room) => (
+              <div key={room.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-card shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer" onClick={() => setSelectedRoom(room)}>
+                <div className="relative h-56 overflow-hidden">
+                  <img src={room.images[0]} alt={room.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <div className="absolute top-4 right-4 rounded-full bg-white/95 dark:bg-dark-card/95 backdrop-blur-sm px-4 py-1.5 text-sm font-bold text-hotel-900 dark:text-white shadow-md">
+                    &#8369;{room.price.toLocaleString()}<span className="text-hotel-400 font-normal">/night</span>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); onBookNow(room.roomTypeKey); }} className="w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-gold-600 dark:hover:bg-gold-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2">Book This Room</button>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-300">
+                    <span className="rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-hotel-900 shadow-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">View Details</span>
+                  </div>
+                </div>
+                <div className="flex flex-col flex-1 p-6">
+                  <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-1 truncate">{room.name}</h3>
+                  <p className="text-xs text-gold-600 font-medium mb-3 truncate">{room.tagline}</p>
+                  <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5 line-clamp-2">{room.description}</p>
+                  <div className="mt-auto">
+                    <div className="flex flex-wrap items-center gap-2 mb-6 h-[4.25rem] overflow-hidden">
+                      {room.features.slice(0, 6).map((feature) => {
+                        const Icon = FEATURE_ICONS[feature];
+                        if (!Icon) return null;
+                        return (
+                          <div key={feature} className="flex items-center gap-1.5 rounded-full bg-hotel-50 dark:bg-dark-bg px-3 py-1.5 text-hotel-600 dark:text-hotel-300">
+                            <Icon className="h-3.5 w-3.5" /><span className="text-xs font-medium">{FEATURE_LABELS[feature]}</span>
+                          </div>
+                        );
+                      })}
+                      {room.features.length > 6 && (
+                        <span className="text-xs text-hotel-400 font-medium">+{room.features.length - 6} more</span>
+                      )}
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); onBookNow(room.roomTypeKey); }} className="w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-gold-600 dark:hover:bg-gold-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2">Book This Room</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Pagination */}
-        <Pagination
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          totalItems={pagination.totalItems}
-          startIndex={pagination.startIndex}
-          endIndex={pagination.endIndex}
-          onPageChange={pagination.setCurrentPage}
-          itemLabel="rooms"
-        />
+          {/* Carousel dots */}
+          {needsCarousel && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {Array.from({ length: totalItems }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCarouselIndex(i)}
+                  className={`rounded-full transition-all duration-300 ${i === carouselIndex ? 'w-8 h-2.5 bg-gold-600' : 'w-2.5 h-2.5 bg-hotel-300 dark:bg-hotel-600 hover:bg-gold-400 dark:hover:bg-gold-500'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {selectedRoom && <RoomModal room={selectedRoom} onClose={() => setSelectedRoom(null)} onBookNow={onBookNow} />}

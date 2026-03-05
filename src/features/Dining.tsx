@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { UtensilsCrossed, Clock, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import { useLandingContent } from '@/hooks/LandingContentContext';
 import { resolveIcon } from '@/utils/icons';
-import { usePagination } from '@/hooks/usePagination';
-import Pagination from '@/components/ui/Pagination';
 
 interface DiningProps {
   onReserveTable?: (restaurant: string) => void;
@@ -15,7 +13,36 @@ export default function Dining({ onReserveTable }: DiningProps) {
   const { restaurants, signatureDishes, diningHighlights, sectionHeaders } = useLandingContent();
   const dH = sectionHeaders.dining;
 
-  const pagination = usePagination({ data: restaurants, itemsPerPage: 3 });
+  // Carousel state for restaurant cards: show 3 at a time, loop/wrap around
+  const itemsPerPage = 3;
+  const totalRestItems = restaurants.length;
+  const needsRestCarousel = totalRestItems > itemsPerPage;
+  const [restIndex, setRestIndex] = useState(0);
+  const [restPaused, setRestPaused] = useState(false);
+  const restTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const goToNextRest = useCallback(() => {
+    setRestIndex((prev) => (prev + 1) % totalRestItems);
+  }, [totalRestItems]);
+
+  useEffect(() => {
+    if (!needsRestCarousel || restPaused) {
+      if (restTimerRef.current) clearInterval(restTimerRef.current);
+      restTimerRef.current = null;
+      return;
+    }
+    restTimerRef.current = setInterval(goToNextRest, 4000);
+    return () => { if (restTimerRef.current) clearInterval(restTimerRef.current); };
+  }, [needsRestCarousel, restPaused, goToNextRest]);
+
+  useEffect(() => {
+    setRestIndex(0);
+  }, [totalRestItems]);
+
+  // Build visible items with wrapping
+  const visibleRestaurants = needsRestCarousel
+    ? Array.from({ length: itemsPerPage }, (_, i) => restaurants[(restIndex + i) % totalRestItems])
+    : restaurants;
 
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -110,49 +137,55 @@ export default function Dining({ onReserveTable }: DiningProps) {
         </div>
 
         {/* Restaurant cards */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-6">
-          {pagination.paginatedData.map((r) => (
-            <div key={r.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-bg border border-hotel-100 dark:border-dark-border shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <div className="relative h-56 overflow-hidden">
-                {r.image && <img src={r.image} alt={r.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="font-serif text-xl font-bold text-white mb-1 drop-shadow">{r.name}</h3>
-                  <p className="text-sm text-white/80 flex items-center gap-1.5"><UtensilsCrossed className="h-3.5 w-3.5" />{r.cuisine}</p>
+        <div
+          onMouseEnter={() => setRestPaused(true)}
+          onMouseLeave={() => setRestPaused(false)}
+        >
+          <div key={restIndex} className="animate-carousel-slide grid lg:grid-cols-3 gap-8 mb-6">
+            {visibleRestaurants.map((r) => (
+              <div key={r.id} className="group flex flex-col rounded-2xl bg-white dark:bg-dark-bg border border-hotel-100 dark:border-dark-border shadow-sm overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="relative h-56 overflow-hidden">
+                  {r.image && <img src={r.image} alt={r.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="font-serif text-xl font-bold text-white mb-1 drop-shadow">{r.name}</h3>
+                    <p className="text-sm text-white/80 flex items-center gap-1.5"><UtensilsCrossed className="h-3.5 w-3.5" />{r.cuisine}</p>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-gold-700 dark:text-gold-400 bg-gold-50 dark:bg-gold-900/20 rounded-full px-3 py-1.5 w-fit mb-4">
+                    <Clock className="h-3.5 w-3.5" />{r.hours}
+                  </div>
+                  <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5">{r.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {r.tags.map((tag) => (
+                      <span key={tag} className="rounded-full bg-hotel-50 dark:bg-dark-card px-3 py-1 text-xs font-medium text-hotel-600 dark:text-hotel-300">{tag}</span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => onReserveTable?.(r.name)}
+                    className="mt-auto flex items-center justify-center gap-2 w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all hover:bg-hotel-800 dark:hover:bg-gold-700 active:scale-[0.98]"
+                  >
+                    <Phone className="h-4 w-4" />{r.buttonText}
+                  </button>
                 </div>
               </div>
-              <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-gold-700 dark:text-gold-400 bg-gold-50 dark:bg-gold-900/20 rounded-full px-3 py-1.5 w-fit mb-4">
-                  <Clock className="h-3.5 w-3.5" />{r.hours}
-                </div>
-                <p className="text-sm text-hotel-500 dark:text-hotel-400 leading-relaxed mb-5">{r.description}</p>
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {r.tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-hotel-50 dark:bg-dark-card px-3 py-1 text-xs font-medium text-hotel-600 dark:text-hotel-300">{tag}</span>
-                  ))}
-                </div>
-                <button
-                  onClick={() => onReserveTable?.(r.name)}
-                  className="mt-auto flex items-center justify-center gap-2 w-full rounded-xl bg-hotel-900 dark:bg-gold-600 py-3 text-sm font-semibold text-white transition-all hover:bg-hotel-800 dark:hover:bg-gold-700 active:scale-[0.98]"
-                >
-                  <Phone className="h-4 w-4" />{r.buttonText}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Pagination */}
-        <div className="mb-16">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.totalItems}
-            startIndex={pagination.startIndex}
-            endIndex={pagination.endIndex}
-            onPageChange={pagination.setCurrentPage}
-            itemLabel="restaurants"
-          />
+          {/* Carousel dots */}
+          {needsRestCarousel && (
+            <div className="flex items-center justify-center gap-2 mb-16">
+              {Array.from({ length: totalRestItems }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setRestIndex(i)}
+                  className={`rounded-full transition-all duration-300 ${i === restIndex ? 'w-8 h-2.5 bg-gold-600' : 'w-2.5 h-2.5 bg-hotel-300 dark:bg-hotel-600 hover:bg-gold-400 dark:hover:bg-gold-500'}`}
+                />
+              ))}
+            </div>
+          )}
+          {!needsRestCarousel && <div className="mb-16" />}
         </div>
 
         {/* Highlights banner */}

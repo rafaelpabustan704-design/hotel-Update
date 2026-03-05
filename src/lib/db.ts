@@ -11,6 +11,8 @@ import type {
 export interface DbSchema {
   reservations: Reservation[];
   diningReservations: DiningReservation[];
+  archivedReservations: Reservation[];
+  archivedDiningReservations: DiningReservation[];
   rooms: ManagedRoom[];
   roomTypes: RoomType[];
   settings: HotelSettings;
@@ -26,6 +28,7 @@ export interface DbSchema {
   availabilityContent: AvailabilityContent;
   contactItems: ContactItem[];
   contactSubmissions: ContactSubmission[];
+  archivedContactSubmissions: ContactSubmission[];
   sectionHeaders: SectionHeaders;
 }
 
