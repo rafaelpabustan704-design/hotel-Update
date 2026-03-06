@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Trash2, Users, Lock, User, UserPlus, Shield,
   CheckCircle2, XCircle, Mail, Pencil, X, Key,
+  Search,
 } from 'lucide-react';
 import type { AdminAccount } from '@/hooks/useAdminAuth';
 import type { AdminRole } from '@/types/admin';
 import MiniPagination, { paginateArray } from '@/components/ui/MiniPagination';
 import { RoleBadge, RoleSelector, PermissionCheckboxes, RoleDescription } from '../_components/RoleComponents';
-import { cardCls, inputCls, labelCls } from './shared';
+import { cardCls, inputCls, labelCls, selectCls } from './shared';
 import ConfirmModal from './ConfirmModal';
+import { ROLES } from '../_config/permissions';
 
 interface SettingsTabProps {
   currentUser: string | null;
@@ -35,7 +37,33 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
   const [editSuccess, setEditSuccess] = useState('');
   const [page, setPage] = useState(0);
 
-  const { paged: paginatedAccounts, total: totalAccounts } = paginateArray(accounts, page);
+  const [accountQuery, setAccountQuery] = useState('');
+  const [accountRoleFilter, setAccountRoleFilter] = useState<'All' | AdminRole>('All');
+
+  const filteredAccounts = useMemo(() => {
+    const q = accountQuery.trim().toLowerCase();
+    return accounts.filter((a) => {
+      const role = (a.role || 'Super Admin') as AdminRole;
+      if (accountRoleFilter !== 'All' && role !== accountRoleFilter) return false;
+
+      if (!q) return true;
+      const haystack = `${a.fullName || ''} ${a.username || ''} ${a.email || ''}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [accounts, accountQuery, accountRoleFilter]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [accountQuery, accountRoleFilter]);
+
+  useEffect(() => {
+    const pageSize = 5;
+    const maxPage = Math.max(0, Math.ceil(filteredAccounts.length / pageSize) - 1);
+    if (page > maxPage) setPage(maxPage);
+  }, [filteredAccounts.length, page]);
+
+  const { paged: paginatedAccounts, total: totalAccounts } = paginateArray(filteredAccounts, page);
+  const isAccountsFiltered = accountQuery.trim() !== '' || accountRoleFilter !== 'All';
 
   const startEdit = (acc: AdminAccount) => {
     setEditingId(acc.id);
@@ -138,9 +166,58 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
       <div className={`${cardCls} p-6`}>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"><Users className="h-5 w-5" /></div>
-          <div><h3 className="font-semibold text-hotel-900 dark:text-white">Admin Accounts</h3><p className="text-xs text-hotel-500 dark:text-hotel-400">{accounts.length} account{accounts.length !== 1 ? 's' : ''} registered</p></div>
+          <div>
+            <h3 className="font-semibold text-hotel-900 dark:text-white">Admin Accounts</h3>
+            <p className="text-xs text-hotel-500 dark:text-hotel-400">
+              {isAccountsFiltered ? `${filteredAccounts.length} of ${accounts.length}` : accounts.length} account{accounts.length !== 1 ? 's' : ''} registered
+            </p>
+          </div>
         </div>
+
+        <div className="grid gap-3 sm:grid-cols-3 mb-5">
+          <div className="sm:col-span-2">
+            <label className={labelCls}><Search className="h-4 w-4 text-hotel-400" />Search</label>
+            <div className="relative">
+              <input
+                value={accountQuery}
+                onChange={(e) => setAccountQuery(e.target.value)}
+                placeholder="Search name, username, or email…"
+                className={`${inputCls} pr-10`}
+              />
+              {accountQuery.trim() !== '' && (
+                <button
+                  type="button"
+                  onClick={() => setAccountQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-lg text-hotel-400 hover:bg-hotel-100 dark:hover:bg-hotel-800"
+                  title="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}><Shield className="h-4 w-4 text-hotel-400" />Role</label>
+            <select
+              value={accountRoleFilter}
+              onChange={(e) => setAccountRoleFilter(e.target.value as 'All' | AdminRole)}
+              className={selectCls}
+            >
+              <option value="All">All roles</option>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="space-y-3">
+          {filteredAccounts.length === 0 && (
+            <div className="rounded-xl border border-dashed border-hotel-200 dark:border-dark-border p-6 text-center">
+              <p className="text-sm font-semibold text-hotel-900 dark:text-white">No accounts found</p>
+              <p className="text-xs text-hotel-500 dark:text-hotel-400 mt-1">Try adjusting your search or role filter.</p>
+            </div>
+          )}
           {paginatedAccounts.map((account) => (
             <div key={account.id} className="rounded-xl border border-hotel-100 dark:border-dark-border p-4 transition-shadow hover:shadow-sm">
               <div className="flex items-center justify-between">
