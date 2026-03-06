@@ -118,7 +118,7 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
       <div className={`${cardCls} p-6`}>
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"><UserPlus className="h-5 w-5" /></div>
-          <div><h3 className="font-semibold text-hotel-900 dark:text-white">Add New Admin</h3><p className="text-xs text-hotel-500 dark:text-hotel-400">Create a new admin account with a role</p></div>
+          <div><h3 className="font-semibold text-hotel-900 dark:text-white">Add User</h3><p className="text-xs text-hotel-500 dark:text-hotel-400">Create a new user account with a role</p></div>
         </div>
         <form onSubmit={async (e) => {
           e.preventDefault();
@@ -128,7 +128,7 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
             setNewAdminRole('Super Admin');
             setNewAdminPerms([]);
             setAdminFormError('');
-            setAdminFormSuccess('Admin account created successfully');
+            setAdminFormSuccess('User account created successfully');
             setTimeout(() => setAdminFormSuccess(''), 3000);
           } else {
             setAdminFormSuccess('');
@@ -158,7 +158,7 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
 
           {adminFormError && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{adminFormError}</p>}
           {adminFormSuccess && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{adminFormSuccess}</p>}
-          <button type="submit" className="rounded-xl bg-gold-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]">Add Admin</button>
+          <button type="submit" className="rounded-xl bg-gold-600 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]">Add User</button>
         </form>
       </div>
 
@@ -167,7 +167,7 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"><Users className="h-5 w-5" /></div>
           <div>
-            <h3 className="font-semibold text-hotel-900 dark:text-white">Admin Accounts</h3>
+            <h3 className="font-semibold text-hotel-900 dark:text-white">Users</h3>
             <p className="text-xs text-hotel-500 dark:text-hotel-400">
               {isAccountsFiltered ? `${filteredAccounts.length} of ${accounts.length}` : accounts.length} account{accounts.length !== 1 ? 's' : ''} registered
             </p>

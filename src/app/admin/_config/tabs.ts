@@ -41,7 +41,7 @@ export const TABS: TabMeta[] = [
   { id: 'site-settings', label: 'Site Settings', title: 'Site Settings', description: 'Site name, logo, footer, and theme colors', icon: Palette, section: 'system' },
   { id: 'navigation', label: 'Navigation', title: 'Navigation Menu', description: 'Configure the navigation menu items', icon: Navigation, section: 'system' },
   { id: 'section-headers', label: 'Section Headers', title: 'Section Headers', description: 'Edit section labels, titles, and descriptions', icon: Globe, section: 'system' },
-  { id: 'settings', label: 'Admin Accounts', title: 'Admin Accounts', description: 'Manage admin accounts', icon: Users, section: 'system' },
+  { id: 'settings', label: 'Users', title: 'Users', description: 'Manage users', icon: Users, section: 'system' },
 ];
 
 export const SECTION_LABELS: Record<TabMeta['section'], string> = {
