@@ -24,12 +24,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Full name is required' }, { status: 400 });
   }
 
+  const validRoles = ['Super Admin', 'Reservations Manager', 'Content Editor', 'Custom'];
+  const role = validRoles.includes(data.role) ? data.role : 'Super Admin';
+
   const account = {
     id: randomUUID(),
     fullName: String(data.fullName).trim(),
     email: String(data.email ?? '').trim(),
     username: String(data.username),
     password: String(data.password),
+    role,
+    permissions: role === 'Custom' && Array.isArray(data.permissions) ? data.permissions : undefined,
     createdAt: new Date().toISOString(),
   };
 

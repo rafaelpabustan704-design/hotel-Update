@@ -2,15 +2,17 @@
 
 import { useState, useMemo } from 'react';
 import {
-    Trash2, Search, MessageSquare, Mail, Phone, User,
-    ChevronDown, ChevronUp, Filter, ArrowUpDown,
-    X, Plus, Save, PhoneCall, Globe, Archive,
+    Search, MessageSquare, Mail, Phone,
+    Filter, ArrowUpDown,
+    X, Plus, Globe, Archive,
 } from 'lucide-react';
 import type { ContactSubmission } from '@/types';
 import { usePagination } from '@/hooks/usePagination';
 import Pagination from '@/components/ui/Pagination';
 import { cardCls, inputCls, selectCls, smallLabelCls, formatDate } from './shared';
 import ConfirmModal from './ConfirmModal';
+import ContactCard, { getSourceBadge } from './contacts/ContactCard';
+import AddContactForm from './contacts/AddContactForm';
 
 type SourceFilter = 'all' | 'form' | 'phone';
 type SortBy = 'newest' | 'oldest' | 'name-asc';
@@ -22,8 +24,6 @@ interface ContactSubmissionsTabProps {
     archivedSubmissions: ContactSubmission[];
 }
 
-const EMPTY_FORM = { fullName: '', email: '', phone: '', subject: '', message: '' };
-
 export default function ContactSubmissionsTab({ submissions, deleteSubmission, addSubmission, archivedSubmissions }: ContactSubmissionsTabProps) {
     const [archiveView, setArchiveView] = useState(false);
     const [search, setSearch] = useState('');
@@ -33,7 +33,6 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
     const [showFilters, setShowFilters] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<ContactSubmission | null>(null);
     const [adding, setAdding] = useState(false);
-    const [form, setForm] = useState(EMPTY_FORM);
 
     const hasActiveFilters = sourceFilter !== 'all' || sortBy !== 'newest';
     const clearFilters = () => { setSourceFilter('all'); setSortBy('newest'); setSearch(''); };
@@ -60,18 +59,6 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
     }, [submissions, search, sourceFilter, sortBy]);
 
     const pagination = usePagination({ data: filtered, itemsPerPage: 10 });
-
-    const handleAddSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        addSubmission({ ...form, source: 'phone', createdAt: new Date().toISOString() });
-        setForm(EMPTY_FORM);
-        setAdding(false);
-    };
-
-    const getSourceBadge = (source: string) => {
-        if (source === 'phone') return <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 text-[10px] font-semibold text-purple-700 dark:text-purple-300"><PhoneCall className="h-2.5 w-2.5" />Phone</span>;
-        return <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-300"><Globe className="h-2.5 w-2.5" />Form</span>;
-    };
 
     return (
         <>
@@ -132,28 +119,19 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
                     <div className={`${cardCls} px-4 py-3`}>
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"><MessageSquare className="h-4 w-4" /></div>
-                            <div>
-                                <p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.length}</p>
-                                <p className="text-xs text-hotel-500 dark:text-hotel-400">Total Inquiries</p>
-                            </div>
+                            <div><p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.length}</p><p className="text-xs text-hotel-500 dark:text-hotel-400">Total Inquiries</p></div>
                         </div>
                     </div>
                     <div className={`${cardCls} px-4 py-3`}>
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"><Mail className="h-4 w-4" /></div>
-                            <div>
-                                <p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.filter((s) => s.createdAt.startsWith(todayStr)).length}</p>
-                                <p className="text-xs text-hotel-500 dark:text-hotel-400">Today</p>
-                            </div>
+                            <div><p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.filter((s) => s.createdAt.startsWith(todayStr)).length}</p><p className="text-xs text-hotel-500 dark:text-hotel-400">Today</p></div>
                         </div>
                     </div>
                     <div className={`${cardCls} px-4 py-3`}>
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"><Phone className="h-4 w-4" /></div>
-                            <div>
-                                <p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.filter((s) => s.createdAt >= weekAgo).length}</p>
-                                <p className="text-xs text-hotel-500 dark:text-hotel-400">This Week</p>
-                            </div>
+                            <div><p className="text-xl font-bold text-hotel-900 dark:text-white leading-tight">{submissions.filter((s) => s.createdAt >= weekAgo).length}</p><p className="text-xs text-hotel-500 dark:text-hotel-400">This Week</p></div>
                         </div>
                     </div>
                 </div>
@@ -174,27 +152,8 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
                     </button>
                 </div>
 
-                {/* Add phone call form */}
-                {adding && (
-                    <form onSubmit={handleAddSubmit} className={`${cardCls} p-5 mb-6 space-y-4`}>
-                        <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-hotel-900 dark:text-white flex items-center gap-2"><PhoneCall className="h-4 w-4 text-purple-500" />Log Phone Call Inquiry</h4>
-                            <button type="button" onClick={() => setAdding(false)} className="text-hotel-400 hover:text-hotel-600 transition-colors"><X className="h-5 w-5" /></button>
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <input name="fullName" value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} placeholder="Caller Name *" required className={inputCls} />
-                            <input name="phone" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone Number *" required className={inputCls} />
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <input name="email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email (optional)" className={inputCls} />
-                            <input name="subject" value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} placeholder="Subject *" required className={inputCls} />
-                        </div>
-                        <textarea name="message" value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} placeholder="Call Notes / Message *" required rows={3} className={`${inputCls} resize-none`} />
-                        <button type="submit" className="flex items-center gap-2 rounded-xl bg-gold-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-gold-700 transition-colors"><Save className="h-4 w-4" />Save</button>
-                    </form>
-                )}
+                {adding && <AddContactForm onAdd={addSubmission} onClose={() => setAdding(false)} />}
 
-                {/* Filters */}
                 {showFilters && (
                     <div className={`mb-6 rounded-xl ${cardCls} p-5`}>
                         <div className="flex items-center justify-between mb-4">
@@ -210,7 +169,6 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
 
                 {(search || hasActiveFilters) && filtered.length > 0 && <p className="mb-4 text-sm text-hotel-500 dark:text-hotel-400">Showing <span className="font-semibold text-hotel-700 dark:text-hotel-200">{filtered.length}</span> of <span className="font-semibold text-hotel-700 dark:text-hotel-200">{submissions.length}</span> inquiries</p>}
 
-                {/* List */}
                 {filtered.length === 0 ? (
                     <div className={`${cardCls} p-16 text-center`}>
                         <MessageSquare className="mx-auto h-16 w-16 text-hotel-200 dark:text-hotel-600 mb-4" />
@@ -220,51 +178,18 @@ export default function ContactSubmissionsTab({ submissions, deleteSubmission, a
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {pagination.paginatedData.map((sub) => {
-                            const isExpanded = expandedId === sub.id;
-                            return (
-                                <div key={sub.id} className={`${cardCls} overflow-hidden transition-shadow hover:shadow-md`}>
-                                    <div className="flex items-center p-5 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : sub.id)}>
-                                        <div className="flex items-center gap-4 min-w-0">
-                                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 font-bold text-sm">{sub.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
-                                            <div className="min-w-0">
-                                                <div className="flex items-center gap-2"><h4 className="font-semibold text-hotel-900 dark:text-white truncate">{sub.fullName}</h4>{getSourceBadge(sub.source)}</div>
-                                                <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{sub.subject || sub.email}</p>
-                                            </div>
-                                        </div>
-                                        <div className="ml-auto flex items-center gap-6">
-                                            <div className="hidden md:flex items-center gap-6 text-sm text-hotel-600 dark:text-hotel-300">
-                                                <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-hotel-400" /><span className="truncate max-w-[150px]">{sub.email || '—'}</span></div>
-                                                <div className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-hotel-400" />{formatDate(sub.createdAt.slice(0, 10))}</div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(sub); }} className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
-                                                {isExpanded ? <ChevronUp className="h-5 w-5 text-hotel-400" /> : <ChevronDown className="h-5 w-5 text-hotel-400" />}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {isExpanded && (
-                                        <div className="border-t border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 px-5 py-5">
-                                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                <div className="flex items-start gap-3"><User className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Name</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{sub.fullName}</p></div></div>
-                                                <div className="flex items-start gap-3"><Mail className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Email</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{sub.email || '—'}</p></div></div>
-                                                <div className="flex items-start gap-3"><Phone className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Phone</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{sub.phone || '—'}</p></div></div>
-                                                <div className="flex items-start gap-3"><MessageSquare className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Subject</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{sub.subject || '—'}</p></div></div>
-                                            </div>
-                                            <div className={`mt-4 rounded-xl p-4 ${cardCls}`}>
-                                                <p className="text-xs text-hotel-400 font-medium uppercase tracking-wider mb-1">Message</p>
-                                                <p className="text-sm text-hotel-700 dark:text-hotel-300 whitespace-pre-wrap">{sub.message}</p>
-                                            </div>
-                                            <p className="mt-4 text-xs text-hotel-400">Received on {new Date(sub.createdAt).toLocaleString()} · via {sub.source === 'phone' ? 'Phone Call' : 'Website Form'}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                        {pagination.paginatedData.map((sub) => (
+                            <ContactCard
+                                key={sub.id}
+                                submission={sub}
+                                isExpanded={expandedId === sub.id}
+                                onToggle={() => setExpandedId(expandedId === sub.id ? null : sub.id)}
+                                onDelete={() => setDeleteTarget(sub)}
+                            />
+                        ))}
                     </div>
                 )}
 
-                {/* Pagination */}
                 <Pagination
                     currentPage={pagination.currentPage}
                     totalPages={pagination.totalPages}

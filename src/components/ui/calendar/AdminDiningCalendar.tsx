@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Users, User, CalendarDays, UtensilsCrossed, 
 import type { DiningReservation } from '@/types';
 import { RESTAURANT_COLORS, getRestaurantColor } from '@/utils/room-features';
 import { DAYS, MONTHS, toDateStr, getCalendarDays, buildDiningReservationMap } from './helpers';
+import MiniPagination, { paginateArray } from '@/components/ui/MiniPagination';
 
 interface AdminDiningCalendarProps {
   diningReservations: DiningReservation[];
@@ -17,6 +18,7 @@ export function AdminDiningCalendar({ diningReservations, onDeleteReservation, o
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [datePage, setDatePage] = useState(0);
 
   const days = useMemo(() => getCalendarDays(year, month), [year, month]);
   const resMap = useMemo(() => buildDiningReservationMap(diningReservations, year, month), [diningReservations, year, month]);
@@ -32,6 +34,7 @@ export function AdminDiningCalendar({ diningReservations, onDeleteReservation, o
   };
   const handleDateSelect = (dateStr: string | null) => {
     setSelectedDate(dateStr);
+    setDatePage(0);
     const dayRes = dateStr ? (resMap.get(dateStr) || []) : [];
     onDateSelect?.(dateStr, dayRes);
   };
@@ -179,68 +182,72 @@ export function AdminDiningCalendar({ diningReservations, onDeleteReservation, o
             <p className="text-sm text-hotel-500 dark:text-hotel-400 text-center py-4">No dining reservations on this date.</p>
           ) : (
             <div className="space-y-3">
-              {selectedReservations.map((r) => {
-                const color = getRestaurantColor(r.restaurant);
-                return (
-                  <div
-                    key={r.id}
-                    className="rounded-xl border border-hotel-100 dark:border-dark-border p-4"
-                    style={{ backgroundColor: color.hexBg }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-hotel-700 font-bold text-sm shadow-sm">
-                          {r.fullName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2)}
+              {(() => {
+                const { paged } = paginateArray(selectedReservations, datePage);
+                return paged.map((r) => {
+                  const color = getRestaurantColor(r.restaurant);
+                  return (
+                    <div
+                      key={r.id}
+                      className="rounded-xl border border-hotel-100 dark:border-dark-border p-4"
+                      style={{ backgroundColor: color.hexBg }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-hotel-700 font-bold text-sm shadow-sm">
+                            {r.fullName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-hotel-900 text-sm truncate">{r.fullName}</p>
+                            <p className="text-xs text-hotel-500 truncate">{r.email}</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-hotel-900 text-sm truncate">{r.fullName}</p>
-                          <p className="text-xs text-hotel-500 truncate">{r.email}</p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Delete this dining reservation?')) {
+                              onDeleteReservation(r.id);
+                            }
+                          }}
+                          className="shrink-0 text-hotel-400 hover:text-red-500 transition-colors p-1"
+                          title="Delete reservation"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="flex items-center gap-1.5 text-xs text-hotel-600">
+                          <UtensilsCrossed className="h-3.5 w-3.5 text-hotel-400" />
+                          {r.restaurant}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-hotel-600">
+                          <Clock className="h-3.5 w-3.5 text-hotel-400" />
+                          {formatTime(r.time)}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-hotel-600">
+                          <Users className="h-3.5 w-3.5 text-hotel-400" />
+                          {r.adults} adult{r.adults !== 1 ? 's' : ''}{r.children > 0 && `, ${r.children} child${r.children !== 1 ? 'ren' : ''}`}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-hotel-600">
+                          <User className="h-3.5 w-3.5 text-hotel-400" />
+                          {r.phone}
                         </div>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm('Delete this dining reservation?')) {
-                            onDeleteReservation(r.id);
-                          }
-                        }}
-                        className="shrink-0 text-hotel-400 hover:text-red-500 transition-colors p-1"
-                        title="Delete reservation"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      {r.specialRequests && (
+                        <p className="mt-2 text-xs text-hotel-500 italic">&quot;{r.specialRequests}&quot;</p>
+                      )}
                     </div>
-                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <div className="flex items-center gap-1.5 text-xs text-hotel-600">
-                        <UtensilsCrossed className="h-3.5 w-3.5 text-hotel-400" />
-                        {r.restaurant}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-hotel-600">
-                        <Clock className="h-3.5 w-3.5 text-hotel-400" />
-                        {formatTime(r.time)}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-hotel-600">
-                        <Users className="h-3.5 w-3.5 text-hotel-400" />
-                        {r.adults} adult{r.adults !== 1 ? 's' : ''}{r.children > 0 && `, ${r.children} child${r.children !== 1 ? 'ren' : ''}`}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-hotel-600">
-                        <User className="h-3.5 w-3.5 text-hotel-400" />
-                        {r.phone}
-                      </div>
-                    </div>
-                    {r.specialRequests && (
-                      <p className="mt-2 text-xs text-hotel-500 italic">&quot;{r.specialRequests}&quot;</p>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
+              <MiniPagination currentPage={datePage} totalItems={selectedReservations.length} onPageChange={setDatePage} className="border-t border-hotel-100 dark:border-dark-border" />
             </div>
           )}
         </div>

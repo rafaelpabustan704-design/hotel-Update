@@ -207,6 +207,19 @@
       "children": 0,
       "specialRequests": "",
       "createdAt": "2026-03-05T03:37:25.866Z"
+    },
+    {
+      "id": "428f3503-2856-4e48-9ce2-12b2901e01f5",
+      "fullName": "jonh",
+      "email": "epicatchai@gmail.com",
+      "phone": "6578989678",
+      "checkIn": "2026-03-22",
+      "checkOut": "2026-03-28",
+      "roomType": "Presidential Suite",
+      "adults": 1,
+      "children": 0,
+      "specialRequests": "ROOM",
+      "createdAt": "2026-03-06T05:40:05.377Z"
     }
   ],
   "diningReservations": [
@@ -326,6 +339,19 @@
       "children": 0,
       "specialRequests": "",
       "createdAt": "2026-03-05T04:35:36.277Z"
+    },
+    {
+      "id": "1378e711-d366-489f-9435-5c3e80316758",
+      "fullName": "rafael",
+      "email": "epicatchai@gmail.com",
+      "phone": "051561651651",
+      "restaurant": "La Dolce Vita",
+      "date": "2026-03-31",
+      "time": "19:00",
+      "adults": 2,
+      "children": 7,
+      "specialRequests": "",
+      "createdAt": "2026-03-06T05:40:17.393Z"
     }
   ],
   "archivedReservations": [],
@@ -636,23 +662,62 @@
       "email": "admin@hotel.com",
       "username": "admin",
       "password": "admin",
+      "role": "Super Admin",
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "5a9c3489-7ea8-4188-8c85-7374d1592f82",
+      "id": "60a8394f-0b21-447e-aa6a-103a887b2c88",
+      "fullName": "Lovely Rose",
+      "email": "Lovely@gmail.com",
+      "username": "Lovely",
+      "password": "Lovely",
+      "role": "Content Editor",
+      "createdAt": "2026-03-06T03:38:39.990Z"
+    },
+    {
+      "id": "ef3ad272-d68e-4108-92d1-19bf83e3dc16",
       "fullName": "Rafael",
       "email": "Rafael@gmail.com",
       "username": "Rafael",
       "password": "Rafael",
-      "createdAt": "2026-02-19T05:50:12.259Z"
+      "role": "Reservations Manager",
+      "createdAt": "2026-03-06T03:39:27.506Z"
     },
     {
-      "id": "6e32b729-2816-42d2-95b9-f0e4ed66b1ad",
-      "fullName": "Rafael",
-      "email": "Rafael@gmail.com",
-      "username": "Rafael2",
-      "password": "Rafael",
-      "createdAt": "2026-02-19T05:51:08.611Z"
+      "id": "1698a15d-fcfc-4e8a-8d3d-52f118aa6cea",
+      "fullName": "Ross Jullian",
+      "email": "ross@gmail.com",
+      "username": "ross",
+      "password": "ross",
+      "role": "Custom",
+      "permissions": [
+        "hero",
+        "dining-highlights",
+        "contact",
+        "cms-amenities",
+        "about",
+        "signature-dishes",
+        "availability-content"
+      ],
+      "createdAt": "2026-03-06T03:40:15.616Z"
+    },
+    {
+      "id": "f885b296-7e58-49b3-87ab-50aa2d53ede1",
+      "fullName": "Rose",
+      "email": "Rose@gmail.com",
+      "username": "Rose",
+      "password": "Rose",
+      "role": "Super Admin",
+      "createdAt": "2026-03-06T03:46:18.304Z"
+    },
+    {
+      "id": "cf2b6a51-d8a3-4884-98ca-c3abeb69eed7",
+      "fullName": "Radahn",
+      "email": "Radahn@gmail.com",
+      "username": "Radahn",
+      "password": "Radahn",
+      "role": "Super Admin",
+      "createdAt": "2026-03-06T03:46:41.357Z"
     }
   ],
   "siteSettings": {
@@ -1105,6 +1170,16 @@
       "message": "Horse Meat",
       "source": "phone",
       "createdAt": "2026-03-05T03:41:49.244Z"
+    },
+    {
+      "id": "d8210a31-7b2e-4645-beba-18efa7deb15b",
+      "fullName": "rafael",
+      "email": "epiccatchai@gmail.com",
+      "phone": "6578989678",
+      "subject": "Hotel",
+      "message": "Room",
+      "source": "form",
+      "createdAt": "2026-03-06T05:39:44.000Z"
     }
   ],
   "archivedContactSubmissions": [],

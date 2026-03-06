@@ -15,12 +15,13 @@ interface AdminSidebarProps {
   toggleTheme: () => void;
   logout: () => void;
   getCounts: (tab: AdminTab) => number | undefined;
+  allowedTabs?: AdminTab[];
 }
 
 export default function AdminSidebar({
   activeTab, setActiveTab, sidebarOpen, setSidebarOpen,
   mobileSidebarOpen, setMobileSidebarOpen,
-  hotelShortName, theme, toggleTheme, logout, getCounts,
+  hotelShortName, theme, toggleTheme, logout, getCounts, allowedTabs,
 }: AdminSidebarProps) {
   const sidebarBtn = (tab: TabMeta) => {
     const count = getCounts(tab.id);
@@ -43,8 +44,8 @@ export default function AdminSidebar({
 
   const sections = (['reservations', 'management', 'landing', 'system'] as const).map((section) => ({
     label: SECTION_LABELS[section],
-    tabs: TABS.filter((t) => t.section === section),
-  }));
+    tabs: TABS.filter((t) => t.section === section && (!allowedTabs || allowedTabs.includes(t.id))),
+  })).filter((section) => section.tabs.length > 0);
 
   return (
     <>

@@ -7,4 +7,4 @@ export type {
   AvailabilityContent, ContactItem, ContactSubmission,
   SectionHeaderGroup, DiningSectionHeaders, AmenitiesSectionHeaders, SectionHeaders,
 } from './cms';
-export type { AdminAccount, HotelSettings } from './admin';
+export type { AdminAccount, AdminRole, HotelSettings } from './admin';

@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import {
-  Trash2, Search, CalendarDays, Users, BedDouble, Mail, Phone,
-  ClipboardList, ChevronDown, ChevronUp, Filter, ArrowUpDown,
+  Search, CalendarDays, Users, BedDouble,
+  ClipboardList, Filter, ArrowUpDown,
   CheckCircle2, XCircle, X, CalendarRange, LayoutList, Archive, ArchiveRestore,
 } from 'lucide-react';
 import type { Reservation, RoomType } from '@/types';
@@ -13,6 +13,8 @@ import { usePagination } from '@/hooks/usePagination';
 import Pagination from '@/components/ui/Pagination';
 import { cardCls, inputCls, selectCls, smallLabelCls, getTodayStr, formatDate, formatDateLabel } from './shared';
 import ConfirmModal from './ConfirmModal';
+import ReservationCard from './reservations/ReservationCard';
+import ArchivedReservationsList from './reservations/ArchivedReservationsList';
 
 type ViewMode = 'calendar' | 'list';
 type StatusFilter = 'all' | 'upcoming' | 'current' | 'past';
@@ -39,6 +41,7 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
   const [sortBy, setSortBy] = useState<SortBy>('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
+  const [archivePage, setArchivePage] = useState(0);
 
   const roomTypeNames = useMemo(() => roomTypes.map((rt) => rt.name), [roomTypes]);
   const roomFilterOptions = useMemo(() => ['All Rooms', ...roomTypeNames], [roomTypeNames]);
@@ -56,9 +59,9 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
     });
   }, [roomTypes, reservations, activeDate]);
 
-  const totalRooms = roomTypes.reduce((sum, rt) => sum + rt.totalRooms, 0);
-  const totalAvailable = availability.reduce((sum, r) => sum + r.available, 0);
-  const totalBooked = totalRooms - totalAvailable;
+  const totalRooms = availability.reduce((s, r) => s + r.totalRooms, 0);
+  const totalBooked = availability.reduce((s, r) => s + r.booked, 0);
+  const totalAvailable = availability.reduce((s, r) => s + r.available, 0);
 
   const clearFilters = () => { setRoomFilter('All Rooms'); setStatusFilter('all'); setSortBy('newest'); setSearch(''); };
 
@@ -66,15 +69,14 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
     let result = [...reservations];
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter((r) => r.fullName.toLowerCase().includes(q) || r.email.toLowerCase().includes(q) || r.roomType.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q));
+      result = result.filter((r) => r.fullName.toLowerCase().includes(q) || r.email.toLowerCase().includes(q) || r.phone.toLowerCase().includes(q) || r.roomType.toLowerCase().includes(q));
     }
     if (roomFilter !== 'All Rooms') result = result.filter((r) => r.roomType === roomFilter);
     if (statusFilter !== 'all') {
       result = result.filter((r) => {
         if (statusFilter === 'upcoming') return r.checkIn > todayStr;
         if (statusFilter === 'current') return r.checkIn <= todayStr && r.checkOut > todayStr;
-        if (statusFilter === 'past') return r.checkOut <= todayStr;
-        return true;
+        return r.checkOut <= todayStr;
       });
     }
     result.sort((a, b) => {
@@ -92,12 +94,6 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
   }, [reservations, search, roomFilter, statusFilter, sortBy, todayStr]);
 
   const pagination = usePagination({ data: filtered, itemsPerPage: 10 });
-
-  const getStatusBadge = (checkIn: string, checkOut: string) => {
-    if (checkIn > todayStr) return <span className="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-300">Upcoming</span>;
-    if (checkIn <= todayStr && checkOut > todayStr) return <span className="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-[10px] font-semibold text-green-700 dark:text-green-300">Current</span>;
-    return <span className="inline-flex items-center rounded-full bg-hotel-100 dark:bg-hotel-800 px-2 py-0.5 text-[10px] font-semibold text-hotel-500 dark:text-hotel-400">Past</span>;
-  };
 
   const hasPast = reservations.some((r) => r.checkOut <= todayStr);
 
@@ -133,39 +129,7 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
       </div>
 
       {/* Archived view */}
-      {archiveView && (
-        <>
-          {archivedReservations.length === 0 ? (
-            <div className={`${cardCls} p-16 text-center`}>
-              <Archive className="mx-auto h-16 w-16 text-hotel-200 dark:text-hotel-600 mb-4" />
-              <h3 className="font-serif text-xl font-bold text-hotel-900 dark:text-white mb-2">No Archived Reservations</h3>
-              <p className="text-hotel-500 dark:text-hotel-400">Past reservations will appear here after archiving.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {archivedReservations.map((reservation) => (
-                <div key={reservation.id} className={`${cardCls} p-4`}>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hotel-100 dark:bg-hotel-800 text-hotel-500 dark:text-hotel-400 font-bold text-sm">{reservation.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-hotel-900 dark:text-white truncate">{reservation.fullName}</h4>
-                        <span className="inline-flex items-center rounded-full bg-hotel-100 dark:bg-hotel-800 px-2 py-0.5 text-[10px] font-semibold text-hotel-500 dark:text-hotel-400">Archived</span>
-                      </div>
-                      <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{reservation.email}</p>
-                    </div>
-                    <div className="hidden md:flex items-center gap-6 text-sm text-hotel-500 dark:text-hotel-400">
-                      <div className="flex items-center gap-2"><BedDouble className="h-4 w-4" />{reservation.roomType}</div>
-                      <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4" />{formatDate(reservation.checkIn)} — {formatDate(reservation.checkOut)}</div>
-                      <div className="flex items-center gap-2"><Users className="h-4 w-4" />{reservation.adults + reservation.children}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      {archiveView && <ArchivedReservationsList archivedReservations={archivedReservations} archivePage={archivePage} setArchivePage={setArchivePage} />}
 
       {/* Active view */}
       {!archiveView && <>
@@ -274,49 +238,18 @@ export default function RoomReservationsTab({ reservations, deleteReservation, r
             </div>
           ) : (
             <div className="space-y-4">
-              {pagination.paginatedData.map((reservation) => {
-                const isExpanded = expandedId === reservation.id;
-                return (
-                  <div key={reservation.id} className={`${cardCls} overflow-hidden transition-shadow hover:shadow-md`}>
-                    <div className="flex items-center p-5 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : reservation.id)}>
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 font-bold text-sm">{reservation.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2"><h4 className="font-semibold text-hotel-900 dark:text-white truncate">{reservation.fullName}</h4>{getStatusBadge(reservation.checkIn, reservation.checkOut)}</div>
-                          <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{reservation.email}</p>
-                        </div>
-                      </div>
-                      <div className="ml-auto flex items-center gap-6">
-                        <div className="hidden md:flex items-center gap-6 text-sm text-hotel-600 dark:text-hotel-300">
-                          <div className="flex items-center gap-2"><BedDouble className="h-4 w-4 text-hotel-400" />{reservation.roomType}</div>
-                          <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-hotel-400" />{formatDate(reservation.checkIn)}</div>
-                          <div className="flex items-center gap-2"><Users className="h-4 w-4 text-hotel-400" />{reservation.adults + reservation.children}</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(reservation); }} className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
-                          {isExpanded ? <ChevronUp className="h-5 w-5 text-hotel-400" /> : <ChevronDown className="h-5 w-5 text-hotel-400" />}
-                        </div>
-                      </div>
-                    </div>
-                    {isExpanded && (
-                      <div className="border-t border-hotel-100 dark:border-dark-border bg-hotel-50/50 dark:bg-dark-bg/50 px-5 py-5">
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div className="flex items-start gap-3"><Mail className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Email</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.email}</p></div></div>
-                          <div className="flex items-start gap-3"><Phone className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Phone</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.phone}</p></div></div>
-                          <div className="flex items-start gap-3"><CalendarDays className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Stay Dates</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{formatDate(reservation.checkIn)} &mdash; {formatDate(reservation.checkOut)}</p></div></div>
-                          <div className="flex items-start gap-3"><BedDouble className="h-4 w-4 mt-0.5 text-hotel-400" /><div><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider">Room &amp; Guests</p><p className="text-sm text-hotel-800 dark:text-hotel-200">{reservation.roomType} &middot; {reservation.adults} {reservation.adults === 1 ? 'adult' : 'adults'}{reservation.children > 0 && <>, {reservation.children} {reservation.children === 1 ? 'child' : 'children'}</>}</p></div></div>
-                        </div>
-                        {reservation.specialRequests && <div className={`mt-4 rounded-xl p-4 ${cardCls}`}><p className="text-xs text-hotel-400 font-medium uppercase tracking-wider mb-1">Special Requests</p><p className="text-sm text-hotel-700 dark:text-hotel-300">{reservation.specialRequests}</p></div>}
-                        <p className="mt-4 text-xs text-hotel-400">Booked on {new Date(reservation.createdAt).toLocaleString()}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {pagination.paginatedData.map((reservation) => (
+                <ReservationCard
+                  key={reservation.id}
+                  reservation={reservation}
+                  isExpanded={expandedId === reservation.id}
+                  onToggle={() => setExpandedId(expandedId === reservation.id ? null : reservation.id)}
+                  onDelete={() => setDeleteTarget(reservation)}
+                />
+              ))}
             </div>
           )}
 
-          {/* Pagination */}
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}

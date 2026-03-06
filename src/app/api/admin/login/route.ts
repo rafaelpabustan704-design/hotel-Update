@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   );
 
   if (match) {
-    return NextResponse.json({ success: true, username: match.username });
+    return NextResponse.json({ success: true, username: match.username, role: match.role || 'Super Admin', permissions: match.permissions || [] });
   }
 
   return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });

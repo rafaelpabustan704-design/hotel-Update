@@ -11,6 +11,7 @@ import { AdminDiningCalendar } from '@/components/ui/Calendar';
 import { useLandingContent } from '@/hooks/LandingContentContext';
 import { usePagination } from '@/hooks/usePagination';
 import Pagination from '@/components/ui/Pagination';
+import MiniPagination, { paginateArray } from '@/components/ui/MiniPagination';
 import { cardCls, inputCls, selectCls, smallLabelCls, getTodayStr, formatDate, formatTime } from './shared';
 import ConfirmModal from './ConfirmModal';
 
@@ -41,6 +42,7 @@ export default function DiningReservationsTab({ diningReservations, deleteDining
   const [diningSortBy, setDiningSortBy] = useState<DiningSortBy>('newest');
   const [showDiningFilters, setShowDiningFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DiningReservation | null>(null);
+  const [archivePage, setArchivePage] = useState(0);
 
   const hasActiveDiningFilters = restaurantFilter !== 'All Restaurants' || diningStatusFilter !== 'all' || diningSortBy !== 'newest';
   const clearDiningFilters = () => { setRestaurantFilter('All Restaurants'); setDiningStatusFilter('all'); setDiningSortBy('newest'); setDiningSearch(''); };
@@ -126,26 +128,30 @@ export default function DiningReservationsTab({ diningReservations, deleteDining
             </div>
           ) : (
             <div className="space-y-3">
-              {archivedDiningReservations.map((res) => (
-                <div key={res.id} className={`${cardCls} p-4`}>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hotel-100 dark:bg-hotel-800 text-hotel-500 dark:text-hotel-400 font-bold text-sm">{res.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-hotel-900 dark:text-white truncate">{res.fullName}</h4>
-                        <span className="inline-flex items-center rounded-full bg-hotel-100 dark:bg-hotel-800 px-2 py-0.5 text-[10px] font-semibold text-hotel-500 dark:text-hotel-400">Archived</span>
+              {(() => {
+                const { paged } = paginateArray(archivedDiningReservations, archivePage);
+                return paged.map((res) => (
+                  <div key={res.id} className={`${cardCls} p-4`}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hotel-100 dark:bg-hotel-800 text-hotel-500 dark:text-hotel-400 font-bold text-sm">{res.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-hotel-900 dark:text-white truncate">{res.fullName}</h4>
+                          <span className="inline-flex items-center rounded-full bg-hotel-100 dark:bg-hotel-800 px-2 py-0.5 text-[10px] font-semibold text-hotel-500 dark:text-hotel-400">Archived</span>
+                        </div>
+                        <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{res.email}</p>
                       </div>
-                      <p className="text-sm text-hotel-500 dark:text-hotel-400 truncate">{res.email}</p>
-                    </div>
-                    <div className="hidden md:flex items-center gap-6 text-sm text-hotel-500 dark:text-hotel-400">
-                      <div className="flex items-center gap-2"><UtensilsCrossed className="h-4 w-4" />{res.restaurant}</div>
-                      <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4" />{formatDate(res.date)}</div>
-                      <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{formatTime(res.time)}</div>
-                      <div className="flex items-center gap-2"><Users className="h-4 w-4" />{res.adults + res.children}</div>
+                      <div className="hidden md:flex items-center gap-6 text-sm text-hotel-500 dark:text-hotel-400">
+                        <div className="flex items-center gap-2"><UtensilsCrossed className="h-4 w-4" />{res.restaurant}</div>
+                        <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4" />{formatDate(res.date)}</div>
+                        <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{formatTime(res.time)}</div>
+                        <div className="flex items-center gap-2"><Users className="h-4 w-4" />{res.adults + res.children}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
+              <MiniPagination currentPage={archivePage} totalItems={archivedDiningReservations.length} onPageChange={setArchivePage} />
             </div>
           )}
         </>

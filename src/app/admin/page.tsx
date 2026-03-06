@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Reservation, DiningReservation } from '@/types';
 import { Hotel, Eye } from 'lucide-react';
 import { useReservations } from '@/hooks/ReservationContext';
@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/ThemeContext';
 import { useLandingContent } from '@/hooks/LandingContentContext';
 import { TABS, type AdminTab } from './_config/tabs';
 import { PREVIEW_MAP } from './_config/previews';
+import { getPermittedTabs } from './_config/permissions';
 
 import AdminLogin from './components/AdminLogin';
 import AdminSidebar, { MobileHeader } from './_components/AdminSidebar';
@@ -73,7 +74,9 @@ export default function AdminPage() {
   const auth = useAdminAuth();
   const lc = useLandingContent();
 
-  const [adminTab, setAdminTab] = useState<AdminTab>('rooms');
+  const allowedTabs = useMemo(() => getPermittedTabs(auth.currentUserRole, auth.currentUserPermissions), [auth.currentUserRole, auth.currentUserPermissions]);
+
+  const [adminTab, setAdminTab] = useState<AdminTab>(() => allowedTabs[0] || 'rooms');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -146,6 +149,7 @@ export default function AdminPage() {
         mobileSidebarOpen={mobileSidebarOpen} setMobileSidebarOpen={setMobileSidebarOpen}
         hotelShortName={hotelShortName} theme={theme} toggleTheme={toggleTheme}
         logout={auth.logout} getCounts={getCounts}
+        allowedTabs={allowedTabs}
       />
 
       <main className="flex-1 min-w-0 flex flex-col min-h-screen lg:min-h-0">
@@ -185,7 +189,7 @@ export default function AdminPage() {
             {adminTab === 'site-settings' && <SiteSettingsTab settings={lc.siteSettings} onSave={lc.updateSiteSettings} />}
             {adminTab === 'navigation' && <NavigationTab items={lc.navigation} onAdd={lc.addNavItem} onUpdate={lc.updateNavItem} onDelete={lc.deleteNavItem} onReorder={lc.updateNavigation} />}
             {adminTab === 'section-headers' && <SectionHeadersTab headers={lc.sectionHeaders} onSave={lc.updateSectionHeaders} />}
-            {adminTab === 'settings' && <SettingsTab currentUser={auth.currentUser} accounts={auth.accounts} addAccount={auth.addAccount} deleteAccount={auth.deleteAccount} />}
+            {adminTab === 'settings' && <SettingsTab currentUser={auth.currentUser} accounts={auth.accounts} addAccount={auth.addAccount} updateAccount={auth.updateAccount} deleteAccount={auth.deleteAccount} />}
           </div>
         </div>
 
