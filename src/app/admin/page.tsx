@@ -140,6 +140,8 @@ export default function AdminPage() {
   const hotelShortName = displayName.split(' ').slice(0, 2).join(' ');
   const meta = TABS.find((t) => t.id === adminTab)!;
   const preview = PREVIEW_MAP[adminTab];
+  const currentAccount = auth.accounts.find((a) => a.username === auth.currentUser);
+  const currentUserName = currentAccount?.fullName || auth.currentUser;
 
   return (
     <div className="min-h-screen bg-hotel-50 dark:bg-dark-bg flex transition-colors">
@@ -149,6 +151,8 @@ export default function AdminPage() {
         mobileSidebarOpen={mobileSidebarOpen} setMobileSidebarOpen={setMobileSidebarOpen}
         hotelShortName={hotelShortName} theme={theme} toggleTheme={toggleTheme}
         logout={auth.logout} getCounts={getCounts}
+        currentUserName={currentUserName}
+        currentUserRole={auth.currentUserRole}
         allowedTabs={allowedTabs}
       />
 

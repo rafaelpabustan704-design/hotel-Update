@@ -27,8 +27,18 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
   const [form, setForm] = useState<SiteSettings>(settings);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  useEffect(() => { setForm(settings); }, [settings]);
+  useEffect(() => {
+    // Only sync incoming settings when the form isn't being edited.
+    // While editing, `setDraftOverride` can cause `settings` to change identity frequently.
+    if (!dirty) setForm(settings);
+  }, [settings, dirty]);
+
+  const patchForm = useCallback((patch: Partial<SiteSettings>) => {
+    setDirty(true);
+    setForm((p) => ({ ...p, ...patch }));
+  }, []);
 
   useEffect(() => {
     setDraftOverride('siteSettings', form);
@@ -40,17 +50,17 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
     setDraftOverride('siteSettings', null);
     setSaving(false);
     setSaved(true);
+    setDirty(false);
     setTimeout(() => setSaved(false), 2000);
   }, [form, onSave, setDraftOverride]);
 
   const resetColors = () => {
-    setForm((p) => ({
-      ...p,
+    patchForm({
       primaryColor: DEFAULT_SITE_SETTINGS.primaryColor,
       secondaryColor: DEFAULT_SITE_SETTINGS.secondaryColor,
       accentColor: DEFAULT_SITE_SETTINGS.accentColor,
       backgroundColor: DEFAULT_SITE_SETTINGS.backgroundColor,
-    }));
+    });
   };
 
   const colorField = ({ label, key, hint }: typeof COLOR_FIELDS[number]) => {
@@ -61,13 +71,13 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
         <label className={labelCls}>{label}</label>
         <p className="text-[10px] text-hotel-400 mb-1.5">{hint}</p>
         <div className="flex items-center gap-3">
-          <input type="color" value={form[key] as string} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded-lg border border-hotel-200 dark:border-dark-border cursor-pointer" />
-          <input className={inputCls} value={form[key] as string} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} placeholder="#000000" />
+          <input type="color" value={form[key] as string} onChange={(e) => patchForm({ [key]: e.target.value } as Partial<SiteSettings>)} className="h-10 w-14 rounded-lg border border-hotel-200 dark:border-dark-border cursor-pointer" />
+          <input className={inputCls} value={form[key] as string} onChange={(e) => patchForm({ [key]: e.target.value } as Partial<SiteSettings>)} placeholder="#000000" />
           {!isDefault && (
             <button
               type="button"
               title={`Reset to default (${defaultVal})`}
-              onClick={() => setForm((p) => ({ ...p, [key]: defaultVal }))}
+              onClick={() => patchForm({ [key]: defaultVal } as Partial<SiteSettings>)}
               className="flex items-center gap-1 shrink-0 rounded-lg border border-hotel-200 dark:border-dark-border px-2 py-2 text-[10px] font-medium text-hotel-500 hover:text-hotel-700 dark:hover:text-hotel-200 hover:border-hotel-300 transition-colors"
             >
               <span className="h-4 w-4 rounded-full border border-hotel-200 dark:border-dark-border shrink-0" style={{ backgroundColor: defaultVal }} />
@@ -92,16 +102,16 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
           <div><h3 className="font-semibold text-hotel-900 dark:text-white">Site Identity</h3><p className="text-xs text-hotel-500 dark:text-hotel-400">Site name, logo, and metadata</p></div>
         </div>
         <div className="space-y-4">
-          <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Site Name</label><input className={inputCls} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
+          <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Site Name</label><input className={inputCls} value={form.name} onChange={(e) => patchForm({ name: e.target.value })} /></div>
           <div>
             <label className={labelCls}>Logo</label>
-            <SingleImageUploader compact preset="thumbnail" value={form.logo} onChange={(url) => setForm((p) => ({ ...p, logo: url }))} />
+            <SingleImageUploader compact preset="thumbnail" value={form.logo} onChange={(url) => patchForm({ logo: url })} />
           </div>
           <div>
             <label className={labelCls}>Favicon</label>
-            <SingleImageUploader compact preset="favicon" value={form.favicon} onChange={(url) => setForm((p) => ({ ...p, favicon: url }))} accept="image/png,image/x-icon,image/svg+xml" />
+            <SingleImageUploader compact preset="favicon" value={form.favicon} onChange={(url) => patchForm({ favicon: url })} accept="image/png,image/x-icon,image/svg+xml" />
           </div>
-          <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Footer Text</label><textarea className={`${inputCls} min-h-[60px]`} value={form.footerText} onChange={(e) => setForm((p) => ({ ...p, footerText: e.target.value }))} rows={2} /></div>
+          <div><label className={labelCls}><Type className="h-4 w-4 text-hotel-400" />Footer Text</label><textarea className={`${inputCls} min-h-[60px]`} value={form.footerText} onChange={(e) => patchForm({ footerText: e.target.value })} rows={2} /></div>
         </div>
       </div>
 
@@ -131,7 +141,7 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
               key={key}
               type="button"
               title={`${label}: ${DEFAULT_SITE_SETTINGS[key]}`}
-              onClick={() => setForm((p) => ({ ...p, [key]: DEFAULT_SITE_SETTINGS[key] }))}
+              onClick={() => patchForm({ [key]: DEFAULT_SITE_SETTINGS[key] } as Partial<SiteSettings>)}
               className="flex items-center gap-1.5 rounded-full bg-white dark:bg-dark-card border border-hotel-200 dark:border-dark-border px-2 py-1 hover:border-gold-500 transition-colors cursor-pointer"
             >
               <span className="h-3.5 w-3.5 rounded-full shrink-0 ring-1 ring-black/10" style={{ backgroundColor: DEFAULT_SITE_SETTINGS[key] as string }} />
@@ -158,7 +168,7 @@ export default function SiteSettingsTab({ settings, onSave }: Props) {
               <button
                 key={preset.id}
                 type="button"
-                onClick={() => setForm((p) => ({ ...p, darkThemePreset: preset.id }))}
+                onClick={() => patchForm({ darkThemePreset: preset.id })}
                 className={`rounded-xl border-2 p-4 text-left transition-all ${
                   isSelected
                     ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 ring-2 ring-gold-500/30'

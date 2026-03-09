@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { X, Eye } from 'lucide-react';
+import { X, Eye, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/hooks/ThemeContext';
 
 interface Props {
   title: string;
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function PreviewModal({ title, onClose, children }: Props) {
+  const { theme, toggleTheme } = useTheme();
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     const handler = (e: KeyboardEvent) => {
@@ -35,13 +38,24 @@ export default function PreviewModal({ title, onClose, children }: Props) {
               Preview
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20 hover:text-white transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-            Close
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+              title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            >
+              {theme === 'light' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+              {theme === 'light' ? 'Dark' : 'Light'}
+            </button>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+              Close
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto bg-white dark:bg-dark-bg">
