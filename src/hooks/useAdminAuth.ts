@@ -89,7 +89,10 @@ export function useAdminAuth() {
     }
   }, []);
 
-  const updateAccount = useCallback(async (id: string, data: { role: AdminRole; permissions?: string[]; newPassword?: string }): Promise<{ success: boolean; error?: string }> => {
+  const updateAccount = useCallback(async (id: string, data: { fullName?: string; email?: string; username?: string; role: AdminRole; permissions?: string[]; newPassword?: string }): Promise<{ success: boolean; error?: string }> => {
+    const targetAccount = accounts.find((a) => a.id === id);
+    const isCurrentUserAccount = targetAccount?.username === currentUser;
+
     try {
       const res = await fetch(`/api/admin/accounts/${id}`, {
         method: 'PUT',
@@ -101,11 +104,14 @@ export function useAdminAuth() {
         return { success: false, error: result.error };
       }
       setAccounts((prev) => prev.map((a) => (a.id === id ? result : a)));
-      if (result.username === currentUser) {
+      if (isCurrentUserAccount) {
         const nextRole = (result.role || 'Super Admin') as AdminRole;
         const nextPermissions = Array.isArray(result.permissions) ? result.permissions : [];
+        const nextUsername = result.username || currentUser || '';
+        setCurrentUser(nextUsername);
         setCurrentUserRole(nextRole);
         setCurrentUserPermissions(nextPermissions);
+        sessionStorage.setItem(AUTH_KEY, nextUsername);
         sessionStorage.setItem(ROLE_KEY, nextRole);
         sessionStorage.setItem(PERMS_KEY, JSON.stringify(nextPermissions));
       }
@@ -113,7 +119,7 @@ export function useAdminAuth() {
     } catch {
       return { success: false, error: 'Network error' };
     }
-  }, [currentUser]);
+  }, [accounts, currentUser]);
 
   const deleteAccount = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
     if (accounts.length <= 1) {

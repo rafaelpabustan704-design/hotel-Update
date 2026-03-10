@@ -81,6 +81,12 @@ export default function AdminPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  useEffect(() => {
+    if (!allowedTabs.includes(adminTab)) {
+      setAdminTab((allowedTabs[0] || 'rooms') as AdminTab);
+    }
+  }, [adminTab, allowedTabs]);
+
   // Contact submissions state
   const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
   const [archivedContactSubmissions, setArchivedContactSubmissions] = useState<ContactSubmission[]>([]);

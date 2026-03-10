@@ -809,67 +809,38 @@
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "60a8394f-0b21-447e-aa6a-103a887b2c88",
-      "fullName": "Lovely Rose",
-      "email": "Lovely@gmail.com",
-      "username": "Lovely",
-      "password": "Lovely",
-      "role": "Content Editor",
-      "createdAt": "2026-03-06T03:38:39.990Z"
-    },
-    {
-      "id": "ef3ad272-d68e-4108-92d1-19bf83e3dc16",
-      "fullName": "Rafael",
-      "email": "Rafael@gmail.com",
-      "username": "Rafael",
-      "password": "Rafael",
+      "id": "b11c82f7-7909-450d-8bcf-702e99cb30a5",
+      "fullName": "reservations manager",
+      "email": "reservation@gmail.com",
+      "username": "reservation",
+      "password": "reservation",
       "role": "Reservations Manager",
-      "createdAt": "2026-03-06T03:39:27.506Z"
+      "createdAt": "2026-03-10T08:06:02.554Z"
     },
     {
-      "id": "1698a15d-fcfc-4e8a-8d3d-52f118aa6cea",
-      "fullName": "Ross Jullian",
-      "email": "ross@gmail.com",
-      "username": "ross",
-      "password": "ross",
+      "id": "5c467970-f891-4326-918b-3e1372b0e194",
+      "fullName": "content editor",
+      "email": "content@gmail.com",
+      "username": "content",
+      "password": "content",
+      "role": "Content Editor",
+      "createdAt": "2026-03-10T08:06:37.485Z"
+    },
+    {
+      "id": "44872a9c-0bc6-47ff-880c-199fc9d7527a",
+      "fullName": "custom",
+      "email": "custom@gmail.com",
+      "username": "custom",
+      "password": "custom",
       "role": "Custom",
       "permissions": [
+        "rooms",
+        "room-types",
         "hero",
         "dining-highlights",
-        "contact",
-        "cms-amenities",
-        "about",
-        "signature-dishes",
-        "availability-content"
+        "contact"
       ],
-      "createdAt": "2026-03-06T03:40:15.616Z"
-    },
-    {
-      "id": "f885b296-7e58-49b3-87ab-50aa2d53ede1",
-      "fullName": "Rose",
-      "email": "Rose@gmail.com",
-      "username": "Rose",
-      "password": "Rose",
-      "role": "Super Admin",
-      "createdAt": "2026-03-06T03:46:18.304Z"
-    },
-    {
-      "id": "cf2b6a51-d8a3-4884-98ca-c3abeb69eed7",
-      "fullName": "Radahn",
-      "email": "Radahn@gmail.com",
-      "username": "Radahn",
-      "password": "Radahn",
-      "role": "Super Admin",
-      "createdAt": "2026-03-06T03:46:41.357Z"
-    },
-    {
-      "id": "b50d50c8-716f-4203-a4ab-ba314b34e4b0",
-      "fullName": "rafael123",
-      "email": "rafael123@gmail.com",
-      "username": "rafael123",
-      "password": "rafael",
-      "role": "Super Admin",
-      "createdAt": "2026-03-09T06:25:13.593Z"
+      "createdAt": "2026-03-10T08:07:09.452Z"
     }
   ],
   "siteSettings": {

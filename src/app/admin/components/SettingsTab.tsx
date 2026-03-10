@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Trash2, Users, Lock, User, UserPlus, Shield,
-  CheckCircle2, XCircle, Mail, Pencil, X, Key,
+  CheckCircle2, XCircle, Mail, Pencil, X,
   Search,
 } from 'lucide-react';
 import type { AdminAccount } from '@/hooks/useAdminAuth';
@@ -18,8 +18,124 @@ interface SettingsTabProps {
   currentUser: string | null;
   accounts: AdminAccount[];
   addAccount: (data: { fullName: string; email: string; username: string; password: string; role?: AdminRole; permissions?: string[] }) => Promise<{ success: boolean; error?: string }>;
-  updateAccount: (id: string, data: { role: AdminRole; permissions?: string[]; newPassword?: string }) => Promise<{ success: boolean; error?: string }>;
+  updateAccount: (id: string, data: { fullName?: string; email?: string; username?: string; role: AdminRole; permissions?: string[]; newPassword?: string }) => Promise<{ success: boolean; error?: string }>;
   deleteAccount: (id: string) => Promise<{ success: boolean; error?: string }>;
+}
+
+interface UserAccountFormModalProps {
+  open: boolean;
+  title: string;
+  subtitle: string;
+  icon: ReactNode;
+  submitLabel: string;
+  form: { fullName: string; email: string; username: string; password: string };
+  role: AdminRole;
+  permissions: string[];
+  error: string;
+  success: string;
+  passwordLabel: string;
+  passwordPlaceholder: string;
+  passwordRequired: boolean;
+  onClose: () => void;
+  onSubmit: () => Promise<void>;
+  onFormChange: (updater: (prev: { fullName: string; email: string; username: string; password: string }) => { fullName: string; email: string; username: string; password: string }) => void;
+  onRoleChange: (role: AdminRole) => void;
+  onPermissionsChange: (perms: string[]) => void;
+}
+
+function UserAccountFormModal({
+  open,
+  title,
+  subtitle,
+  icon,
+  submitLabel,
+  form,
+  role,
+  permissions,
+  error,
+  success,
+  passwordLabel,
+  passwordPlaceholder,
+  passwordRequired,
+  onClose,
+  onSubmit,
+  onFormChange,
+  onRoleChange,
+  onPermissionsChange,
+}: UserAccountFormModalProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-dark-card border border-hotel-100 dark:border-dark-border shadow-2xl">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-hotel-100 dark:border-dark-border">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">{icon}</div>
+            <div>
+              <h3 className="font-semibold text-hotel-900 dark:text-white">{title}</h3>
+              <p className="text-xs text-hotel-500 dark:text-hotel-400">{subtitle}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 hover:bg-hotel-100 dark:hover:bg-hotel-800 hover:text-hotel-700 dark:hover:text-hotel-200 transition-colors"
+            title="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await onSubmit();
+          }}
+          className="p-6 space-y-4 max-h-[75vh] overflow-auto"
+        >
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div><label className={labelCls}><User className="h-4 w-4 text-hotel-400" />Full Name</label><input type="text" value={form.fullName} onChange={(e) => onFormChange((p) => ({ ...p, fullName: e.target.value }))} placeholder="e.g. Juan Dela Cruz" required className={inputCls} /></div>
+            <div><label className={labelCls}><Mail className="h-4 w-4 text-hotel-400" />Email</label><input type="email" value={form.email} onChange={(e) => onFormChange((p) => ({ ...p, email: e.target.value }))} placeholder="e.g. juan@hotel.com" className={inputCls} /></div>
+            <div><label className={labelCls}><User className="h-4 w-4 text-hotel-400" />Username</label><input type="text" value={form.username} onChange={(e) => onFormChange((p) => ({ ...p, username: e.target.value }))} placeholder="Min 3 characters" required minLength={3} className={inputCls} /></div>
+            <div><label className={labelCls}><Lock className="h-4 w-4 text-hotel-400" />{passwordLabel}</label><input type="password" value={form.password} onChange={(e) => onFormChange((p) => ({ ...p, password: e.target.value }))} placeholder={passwordPlaceholder} minLength={4} required={passwordRequired} className={inputCls} /></div>
+          </div>
+
+          <div>
+            <label className={labelCls}><Shield className="h-4 w-4 text-hotel-400" />Role</label>
+            <RoleSelector value={role} onChange={onRoleChange} />
+            <RoleDescription role={role} />
+          </div>
+
+          {role === 'Custom' && (
+            <div>
+              <label className={labelCls}>Allowed Tabs</label>
+              <PermissionCheckboxes selected={permissions} onChange={onPermissionsChange} />
+            </div>
+          )}
+
+          {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{error}</p>}
+          {success && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{success}</p>}
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-hotel-200 dark:border-dark-border px-5 py-2.5 text-sm font-semibold text-hotel-600 dark:text-hotel-300 hover:bg-hotel-50 dark:hover:bg-hotel-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-xl bg-gold-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]"
+            >
+              {submitLabel}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default function SettingsTab({ currentUser, accounts, addAccount, updateAccount, deleteAccount }: SettingsTabProps) {
@@ -30,10 +146,11 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
   const [adminFormSuccess, setAdminFormSuccess] = useState('');
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminAccount | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editRole, setEditRole] = useState<AdminRole>('Super Admin');
-  const [editPerms, setEditPerms] = useState<string[]>([]);
-  const [editPassword, setEditPassword] = useState('');
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<AdminAccount | null>(null);
+  const [editAdminForm, setEditAdminForm] = useState({ fullName: '', email: '', username: '', password: '' });
+  const [editAdminRole, setEditAdminRole] = useState<AdminRole>('Super Admin');
+  const [editAdminPerms, setEditAdminPerms] = useState<string[]>([]);
   const [editError, setEditError] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
   const [page, setPage] = useState(0);
@@ -67,26 +184,51 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
   const isAccountsFiltered = accountQuery.trim() !== '' || accountRoleFilter !== 'All';
 
   const startEdit = (acc: AdminAccount) => {
-    setEditingId(acc.id);
-    setEditRole(acc.role || 'Super Admin');
-    setEditPerms(acc.permissions || []);
-    setEditPassword('');
+    setEditTarget(acc);
+    setEditAdminForm({
+      fullName: acc.fullName || '',
+      email: acc.email || '',
+      username: acc.username || '',
+      password: '',
+    });
+    setEditAdminRole(acc.role || 'Super Admin');
+    setEditAdminPerms(acc.permissions || []);
+    setEditError('');
+    setEditSuccess('');
+    setEditUserOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditUserOpen(false);
+    setEditTarget(null);
     setEditError('');
     setEditSuccess('');
   };
 
-  const saveEdit = async (id: string) => {
-    if (editPassword && editPassword.length < 4) {
+  const saveEdit = async () => {
+    if (!editTarget) return;
+
+    if (editAdminForm.password && editAdminForm.password.length < 4) {
       setEditError('Password must be at least 4 characters');
       setTimeout(() => setEditError(''), 3000);
       return;
     }
-    const payload = { role: editRole, permissions: editRole === 'Custom' ? editPerms : undefined, newPassword: editPassword || undefined };
-    const result = await updateAccount(id, payload);
+    const payload = {
+      fullName: editAdminForm.fullName,
+      email: editAdminForm.email,
+      username: editAdminForm.username,
+      role: editAdminRole,
+      permissions: editAdminRole === 'Custom' ? editAdminPerms : undefined,
+      newPassword: editAdminForm.password || undefined,
+    };
+    const result = await updateAccount(editTarget.id, payload);
     if (result.success) {
-      setEditSuccess(editPassword ? 'Role & password updated' : 'Role updated successfully');
-      setEditPassword('');
-      setTimeout(() => { setEditSuccess(''); setEditingId(null); }, 1500);
+      setEditSuccess('User updated successfully');
+      setEditAdminForm((prev) => ({ ...prev, password: '' }));
+      setTimeout(() => {
+        setEditSuccess('');
+        closeEditModal();
+      }, 1200);
     } else {
       setEditError(result.error || 'Failed to update');
       setTimeout(() => setEditError(''), 3000);
@@ -185,52 +327,21 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
                 </div>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => editingId === account.id ? setEditingId(null) : startEdit(account)}
+                    onClick={() => {
+                      if (editUserOpen && editTarget?.id === account.id) {
+                        closeEditModal();
+                        return;
+                      }
+                      startEdit(account);
+                    }}
                     className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 transition-colors"
-                    title="Edit role"
+                    title="Edit user"
                   >
-                    {editingId === account.id ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                    {editUserOpen && editTarget?.id === account.id ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
                   </button>
                   <button onClick={() => setDeleteTarget(account)} disabled={account.username === currentUser || accounts.length <= 1} className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${account.username === currentUser || accounts.length <= 1 ? 'text-hotel-200 dark:text-hotel-700 cursor-not-allowed' : 'text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'}`}><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
-
-              {/* Inline role editor */}
-              {editingId === account.id && (
-                <div className="mt-4 pt-4 border-t border-hotel-100 dark:border-dark-border space-y-3">
-                  <div>
-                    <label className={labelCls}><Shield className="h-4 w-4 text-hotel-400" />Role</label>
-                    <RoleSelector value={editRole} onChange={setEditRole} />
-                    <RoleDescription role={editRole} />
-                  </div>
-                  {editRole === 'Custom' && (
-                    <div>
-                      <label className={labelCls}>Allowed Tabs</label>
-                      <PermissionCheckboxes selected={editPerms} onChange={setEditPerms} />
-                    </div>
-                  )}
-                  <div>
-                    <label className={labelCls}><Key className="h-4 w-4 text-hotel-400" />Change Password</label>
-                    <input
-                      type="password"
-                      value={editPassword}
-                      onChange={(e) => setEditPassword(e.target.value)}
-                      placeholder="Leave blank to keep current password"
-                      minLength={4}
-                      className={inputCls}
-                    />
-                    <p className="text-xs text-hotel-400 mt-1">Min 4 characters. Leave blank to keep unchanged.</p>
-                  </div>
-                  {editError && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{editError}</p>}
-                  {editSuccess && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{editSuccess}</p>}
-                  <button
-                    onClick={() => saveEdit(account.id)}
-                    className="rounded-xl bg-gold-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -252,107 +363,68 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
         />
       )}
 
-      {addUserOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => {
-              setAddUserOpen(false);
-              setAdminFormError('');
+      <UserAccountFormModal
+        open={editUserOpen && !!editTarget}
+        title="Edit User"
+        subtitle="Update account details, role, and password"
+        icon={<Pencil className="h-5 w-5" />}
+        submitLabel="Save Changes"
+        form={editAdminForm}
+        role={editAdminRole}
+        permissions={editAdminPerms}
+        error={editError}
+        success={editSuccess}
+        passwordLabel="New Password"
+        passwordPlaceholder="Leave blank to keep current password"
+        passwordRequired={false}
+        onClose={closeEditModal}
+        onSubmit={saveEdit}
+        onFormChange={setEditAdminForm}
+        onRoleChange={setEditAdminRole}
+        onPermissionsChange={setEditAdminPerms}
+      />
+
+      <UserAccountFormModal
+        open={addUserOpen}
+        title="Add User"
+        subtitle="Create a new user account with a role"
+        icon={<UserPlus className="h-5 w-5" />}
+        submitLabel="Add User"
+        form={newAdminForm}
+        role={newAdminRole}
+        permissions={newAdminPerms}
+        error={adminFormError}
+        success={adminFormSuccess}
+        passwordLabel="Password"
+        passwordPlaceholder="Min 4 characters"
+        passwordRequired
+        onClose={() => {
+          setAddUserOpen(false);
+          setAdminFormError('');
+          setAdminFormSuccess('');
+        }}
+        onSubmit={async () => {
+          const result = await addAccount({ ...newAdminForm, role: newAdminRole, permissions: newAdminRole === 'Custom' ? newAdminPerms : undefined });
+          if (result.success) {
+            setNewAdminForm({ fullName: '', email: '', username: '', password: '' });
+            setNewAdminRole('Super Admin');
+            setNewAdminPerms([]);
+            setAdminFormError('');
+            setAdminFormSuccess('User account created successfully');
+            setTimeout(() => {
               setAdminFormSuccess('');
-            }}
-          />
-          <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-dark-card border border-hotel-100 dark:border-dark-border shadow-2xl">
-            <div className="flex items-start justify-between gap-4 p-6 border-b border-hotel-100 dark:border-dark-border">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"><UserPlus className="h-5 w-5" /></div>
-                <div>
-                  <h3 className="font-semibold text-hotel-900 dark:text-white">Add User</h3>
-                  <p className="text-xs text-hotel-500 dark:text-hotel-400">Create a new user account with a role</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddUserOpen(false);
-                  setAdminFormError('');
-                  setAdminFormSuccess('');
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 hover:bg-hotel-100 dark:hover:bg-hotel-800 hover:text-hotel-700 dark:hover:text-hotel-200 transition-colors"
-                title="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const result = await addAccount({ ...newAdminForm, role: newAdminRole, permissions: newAdminRole === 'Custom' ? newAdminPerms : undefined });
-                if (result.success) {
-                  setNewAdminForm({ fullName: '', email: '', username: '', password: '' });
-                  setNewAdminRole('Super Admin');
-                  setNewAdminPerms([]);
-                  setAdminFormError('');
-                  setAdminFormSuccess('User account created successfully');
-                  setTimeout(() => {
-                    setAdminFormSuccess('');
-                    setAddUserOpen(false);
-                  }, 1200);
-                } else {
-                  setAdminFormSuccess('');
-                  setAdminFormError(result.error || 'Failed to create account');
-                  setTimeout(() => setAdminFormError(''), 3000);
-                }
-              }}
-              className="p-6 space-y-4 max-h-[75vh] overflow-auto"
-            >
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div><label className={labelCls}><User className="h-4 w-4 text-hotel-400" />Full Name</label><input type="text" value={newAdminForm.fullName} onChange={(e) => setNewAdminForm((p) => ({ ...p, fullName: e.target.value }))} placeholder="e.g. Juan Dela Cruz" required className={inputCls} /></div>
-                <div><label className={labelCls}><Mail className="h-4 w-4 text-hotel-400" />Email</label><input type="email" value={newAdminForm.email} onChange={(e) => setNewAdminForm((p) => ({ ...p, email: e.target.value }))} placeholder="e.g. juan@hotel.com" className={inputCls} /></div>
-                <div><label className={labelCls}><User className="h-4 w-4 text-hotel-400" />Username</label><input type="text" value={newAdminForm.username} onChange={(e) => setNewAdminForm((p) => ({ ...p, username: e.target.value }))} placeholder="Min 3 characters" required minLength={3} className={inputCls} /></div>
-                <div><label className={labelCls}><Lock className="h-4 w-4 text-hotel-400" />Password</label><input type="password" value={newAdminForm.password} onChange={(e) => setNewAdminForm((p) => ({ ...p, password: e.target.value }))} placeholder="Min 4 characters" required minLength={4} className={inputCls} /></div>
-              </div>
-
-              <div>
-                <label className={labelCls}><Shield className="h-4 w-4 text-hotel-400" />Role</label>
-                <RoleSelector value={newAdminRole} onChange={setNewAdminRole} />
-                <RoleDescription role={newAdminRole} />
-              </div>
-
-              {newAdminRole === 'Custom' && (
-                <div>
-                  <label className={labelCls}>Allowed Tabs</label>
-                  <PermissionCheckboxes selected={newAdminPerms} onChange={setNewAdminPerms} />
-                </div>
-              )}
-
-              {adminFormError && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{adminFormError}</p>}
-              {adminFormSuccess && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{adminFormSuccess}</p>}
-
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddUserOpen(false);
-                    setAdminFormError('');
-                    setAdminFormSuccess('');
-                  }}
-                  className="rounded-xl border border-hotel-200 dark:border-dark-border px-5 py-2.5 text-sm font-semibold text-hotel-600 dark:text-hotel-300 hover:bg-hotel-50 dark:hover:bg-hotel-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl bg-gold-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]"
-                >
-                  Add User
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              setAddUserOpen(false);
+            }, 1200);
+          } else {
+            setAdminFormSuccess('');
+            setAdminFormError(result.error || 'Failed to create account');
+            setTimeout(() => setAdminFormError(''), 3000);
+          }
+        }}
+        onFormChange={setNewAdminForm}
+        onRoleChange={setNewAdminRole}
+        onPermissionsChange={setNewAdminPerms}
+      />
     </div>
   );
 }
