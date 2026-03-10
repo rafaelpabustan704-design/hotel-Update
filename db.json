@@ -861,6 +861,15 @@
       "password": "Radahn",
       "role": "Super Admin",
       "createdAt": "2026-03-06T03:46:41.357Z"
+    },
+    {
+      "id": "b50d50c8-716f-4203-a4ab-ba314b34e4b0",
+      "fullName": "rafael123",
+      "email": "rafael123@gmail.com",
+      "username": "rafael123",
+      "password": "rafael",
+      "role": "Super Admin",
+      "createdAt": "2026-03-09T06:25:13.593Z"
     }
   ],
   "siteSettings": {

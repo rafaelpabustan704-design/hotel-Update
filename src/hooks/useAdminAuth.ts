@@ -101,11 +101,19 @@ export function useAdminAuth() {
         return { success: false, error: result.error };
       }
       setAccounts((prev) => prev.map((a) => (a.id === id ? result : a)));
+      if (result.username === currentUser) {
+        const nextRole = (result.role || 'Super Admin') as AdminRole;
+        const nextPermissions = Array.isArray(result.permissions) ? result.permissions : [];
+        setCurrentUserRole(nextRole);
+        setCurrentUserPermissions(nextPermissions);
+        sessionStorage.setItem(ROLE_KEY, nextRole);
+        sessionStorage.setItem(PERMS_KEY, JSON.stringify(nextPermissions));
+      }
       return { success: true };
     } catch {
       return { success: false, error: 'Network error' };
     }
-  }, []);
+  }, [currentUser]);
 
   const deleteAccount = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
     if (accounts.length <= 1) {

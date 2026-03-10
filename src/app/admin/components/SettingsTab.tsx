@@ -209,20 +209,18 @@ export default function SettingsTab({ currentUser, accounts, addAccount, updateA
                       <PermissionCheckboxes selected={editPerms} onChange={setEditPerms} />
                     </div>
                   )}
-                  {account.username !== currentUser && (
-                    <div>
-                      <label className={labelCls}><Key className="h-4 w-4 text-hotel-400" />Change Password</label>
-                      <input
-                        type="password"
-                        value={editPassword}
-                        onChange={(e) => setEditPassword(e.target.value)}
-                        placeholder="Leave blank to keep current password"
-                        minLength={4}
-                        className={inputCls}
-                      />
-                      <p className="text-xs text-hotel-400 mt-1">Min 4 characters. Leave blank to keep unchanged.</p>
-                    </div>
-                  )}
+                  <div>
+                    <label className={labelCls}><Key className="h-4 w-4 text-hotel-400" />Change Password</label>
+                    <input
+                      type="password"
+                      value={editPassword}
+                      onChange={(e) => setEditPassword(e.target.value)}
+                      placeholder="Leave blank to keep current password"
+                      minLength={4}
+                      className={inputCls}
+                    />
+                    <p className="text-xs text-hotel-400 mt-1">Min 4 characters. Leave blank to keep unchanged.</p>
+                  </div>
                   {editError && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{editError}</p>}
                   {editSuccess && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{editSuccess}</p>}
                   <button
