@@ -141,14 +141,6 @@ export function useAdminAuth() {
   }, [accounts, currentUser]);
 
   const deleteAccount = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
-    if (accounts.length <= 1) {
-      return { success: false, error: 'Cannot delete the last admin account' };
-    }
-    const target = accounts.find((a) => a.id === id);
-    if (target && target.username === currentUser) {
-      return { success: false, error: 'Cannot delete your own account while logged in' };
-    }
-
     try {
       const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
       const result = await res.json();
@@ -156,11 +148,15 @@ export function useAdminAuth() {
         return { success: false, error: result.error };
       }
       setAccounts((prev) => prev.filter((a) => a.id !== id));
+      const deletedAccount = accounts.find((a) => a.id === id);
+      if (deletedAccount?.username === currentUser) {
+        logout();
+      }
       return { success: true };
     } catch {
       return { success: false, error: 'Network error' };
     }
-  }, [accounts, currentUser]);
+  }, [accounts, currentUser, logout]);
 
   const addRole = useCallback(async (data: { name: string; description?: string; permissionIds?: string[] }) => {
     const res = await fetch('/api/admin/roles', {
@@ -194,7 +190,7 @@ export function useAdminAuth() {
     return { success: true };
   }, []);
 
-  const addPermission = useCallback(async (data: { tab: string; action?: string; code?: string; description?: string }) => {
+  const addPermission = useCallback(async (data: { name: string; tabs: string[]; action?: string; code?: string; description?: string }) => {
     const res = await fetch('/api/admin/permissions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -206,7 +202,7 @@ export function useAdminAuth() {
     return { success: true };
   }, []);
 
-  const updatePermission = useCallback(async (id: string, data: { tab?: string; action?: string; code?: string; description?: string }) => {
+  const updatePermission = useCallback(async (id: string, data: { name?: string; tabs?: string[]; tab?: string; action?: string; code?: string; description?: string }) => {
     const res = await fetch(`/api/admin/permissions/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

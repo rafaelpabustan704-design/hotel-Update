@@ -810,33 +810,40 @@
       "roleId": "role-super-admin"
     },
     {
-      "id": "b11c82f7-7909-450d-8bcf-702e99cb30a5",
-      "fullName": "reservations manager",
-      "email": "reservation@gmail.com",
-      "username": "reservation",
-      "password": "reservation",
-      "role": "Reservations Manager",
-      "createdAt": "2026-03-10T08:06:02.554Z",
-      "roleId": "role-reservations-manager"
+      "id": "0d6d8ead-1894-4c24-86b3-b27e5cc65063",
+      "fullName": "Rose",
+      "email": "Rose@gmail.com",
+      "username": "Rose",
+      "password": "Rose",
+      "roleId": "b24eef3f-153d-48bd-88f9-a588d45e2c39",
+      "createdAt": "2026-03-11T06:53:45.970Z"
     },
     {
-      "id": "5c467970-f891-4326-918b-3e1372b0e194",
-      "fullName": "content editor",
-      "email": "content@gmail.com",
-      "username": "content",
-      "password": "content",
-      "role": "Content Editor",
-      "createdAt": "2026-03-10T08:06:37.485Z",
-      "roleId": "role-content-editor"
+      "id": "a2dbdbc1-b890-427d-93b8-5d23dbb6f4b3",
+      "fullName": "Rafael",
+      "email": "Rafael@gmail.com",
+      "username": "Rafael",
+      "password": "Rafael",
+      "roleId": "1ddf5313-aff7-49a6-9561-5ce07f626eed",
+      "createdAt": "2026-03-11T06:54:12.774Z"
     },
     {
-      "id": "9bb6ba26-d48e-4c09-b012-53733a5baa3b",
-      "fullName": "custom",
-      "email": "custom@gmail.com",
-      "username": "custom",
-      "password": "custom",
-      "roleId": "role-custom",
-      "createdAt": "2026-03-11T03:17:51.461Z"
+      "id": "03200ffe-4b6b-41b6-abb1-3e990702d8d0",
+      "fullName": "Robert",
+      "email": "Robert@gmail.com",
+      "username": "Robert",
+      "password": "Robert",
+      "roleId": "107e1de7-5743-45f4-8950-467224ecc905",
+      "createdAt": "2026-03-11T06:54:50.169Z"
+    },
+    {
+      "id": "5d4f6ca6-8901-4e67-8cb7-daf136f17d9c",
+      "fullName": "Jullian",
+      "email": "Jullian@gmail.com",
+      "username": "Jullian",
+      "password": "Jullian",
+      "roleId": "95e3634f-2344-4d0e-b0ab-84436fc0a6b5",
+      "createdAt": "2026-03-11T06:55:20.932Z"
     }
   ],
   "siteSettings": {
@@ -1332,130 +1339,316 @@
   },
   "permissions": [
     {
-      "id": "perm-rooms-access",
-      "code": "rooms:access",
+      "id": "4ccee01e-f66a-4d2d-a262-9b2340a9cbda",
+      "name": "Superadmin",
+      "code": "superadmin:access",
+      "tabs": [
+        "rooms",
+        "room-types",
+        "manage-rooms",
+        "dining",
+        "contact-submissions",
+        "restaurants",
+        "signature-dishes",
+        "availability-content",
+        "cms-amenities",
+        "about",
+        "dining-highlights",
+        "contact",
+        "hero",
+        "site-settings",
+        "notifications",
+        "settings",
+        "navigation",
+        "section-headers"
+      ],
       "tab": "rooms",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "description": "",
+      "createdAt": "2026-03-11T06:32:18.033Z",
+      "updatedAt": "2026-03-11T06:32:18.033Z"
+    },
+    {
+      "id": "perm-rooms-access",
+      "name": "rooms access",
+      "code": "rooms:access",
+      "tabs": [
+        "rooms"
+      ],
+      "tab": "rooms",
+      "action": "manage",
+      "createdAt": "2026-03-11T06:35:44.847Z",
+      "updatedAt": "2026-03-11T06:35:44.847Z"
     },
     {
       "id": "perm-dining-access",
+      "name": "dining access",
       "code": "dining:access",
+      "tabs": [
+        "dining"
+      ],
       "tab": "dining",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:35:49.197Z",
+      "updatedAt": "2026-03-11T06:35:49.197Z"
     },
     {
       "id": "perm-contact-submissions-access",
+      "name": "contact submissions access",
       "code": "contact-submissions:access",
+      "tabs": [
+        "contact-submissions"
+      ],
       "tab": "contact-submissions",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:35:51.642Z",
+      "updatedAt": "2026-03-11T06:35:51.642Z"
     },
     {
       "id": "perm-room-types-access",
+      "name": "room types access",
       "code": "room-types:access",
+      "tabs": [
+        "room-types"
+      ],
       "tab": "room-types",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:35:55.719Z",
+      "updatedAt": "2026-03-11T06:35:55.719Z"
     },
     {
       "id": "perm-manage-rooms-access",
+      "name": "manage rooms access",
       "code": "manage-rooms:access",
+      "tabs": [
+        "manage-rooms"
+      ],
       "tab": "manage-rooms",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:35:57.287Z",
+      "updatedAt": "2026-03-11T06:35:57.287Z"
     },
     {
       "id": "perm-hero-access",
+      "name": "hero access",
       "code": "hero:access",
+      "tabs": [
+        "hero"
+      ],
       "tab": "hero",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:35:59.186Z",
+      "updatedAt": "2026-03-11T06:35:59.186Z"
     },
     {
       "id": "perm-about-access",
+      "name": "about access",
       "code": "about:access",
+      "tabs": [
+        "about"
+      ],
       "tab": "about",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:01.184Z",
+      "updatedAt": "2026-03-11T06:36:01.184Z"
     },
     {
       "id": "perm-restaurants-access",
+      "name": "restaurants access",
       "code": "restaurants:access",
+      "tabs": [
+        "restaurants"
+      ],
       "tab": "restaurants",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:02.732Z",
+      "updatedAt": "2026-03-11T06:36:02.732Z"
     },
     {
       "id": "perm-signature-dishes-access",
+      "name": "signature dishes access",
       "code": "signature-dishes:access",
+      "tabs": [
+        "signature-dishes"
+      ],
       "tab": "signature-dishes",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:04.373Z",
+      "updatedAt": "2026-03-11T06:36:04.373Z"
     },
     {
       "id": "perm-dining-highlights-access",
+      "name": "dining highlights access",
       "code": "dining-highlights:access",
+      "tabs": [
+        "dining-highlights"
+      ],
       "tab": "dining-highlights",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:05.788Z",
+      "updatedAt": "2026-03-11T06:36:05.788Z"
     },
     {
       "id": "perm-cms-amenities-access",
+      "name": "cms amenities access",
       "code": "cms-amenities:access",
+      "tabs": [
+        "cms-amenities"
+      ],
       "tab": "cms-amenities",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:07.438Z",
+      "updatedAt": "2026-03-11T06:36:07.438Z"
     },
     {
       "id": "perm-availability-content-access",
+      "name": "availability content access",
       "code": "availability-content:access",
+      "tabs": [
+        "availability-content"
+      ],
       "tab": "availability-content",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:09.055Z",
+      "updatedAt": "2026-03-11T06:36:09.055Z"
     },
     {
       "id": "perm-contact-access",
+      "name": "contact access",
       "code": "contact:access",
+      "tabs": [
+        "contact"
+      ],
       "tab": "contact",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:10.792Z",
+      "updatedAt": "2026-03-11T06:36:10.792Z"
     },
     {
       "id": "perm-site-settings-access",
+      "name": "site settings access",
       "code": "site-settings:access",
+      "tabs": [
+        "site-settings"
+      ],
       "tab": "site-settings",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:12.547Z",
+      "updatedAt": "2026-03-11T06:36:12.547Z"
     },
     {
       "id": "perm-navigation-access",
+      "name": "navigation access",
       "code": "navigation:access",
+      "tabs": [
+        "navigation"
+      ],
       "tab": "navigation",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:13.863Z",
+      "updatedAt": "2026-03-11T06:36:13.863Z"
     },
     {
       "id": "perm-section-headers-access",
+      "name": "section headers access",
       "code": "section-headers:access",
+      "tabs": [
+        "section-headers"
+      ],
       "tab": "section-headers",
       "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
-    },
-    {
-      "id": "perm-settings-access",
-      "code": "settings:access",
-      "tab": "settings",
-      "action": "manage",
-      "createdAt": "2026-03-11T02:51:17.238Z"
+      "createdAt": "2026-03-11T06:36:15.250Z",
+      "updatedAt": "2026-03-11T06:36:15.250Z"
     },
     {
       "id": "perm-notifications-access",
+      "name": "notifications access",
       "code": "notifications:access",
+      "tabs": [
+        "notifications"
+      ],
       "tab": "notifications",
       "action": "manage",
-      "createdAt": "2026-03-11T03:27:46.395Z"
+      "createdAt": "2026-03-11T06:36:17.025Z",
+      "updatedAt": "2026-03-11T06:36:17.025Z"
+    },
+    {
+      "id": "perm-settings-access",
+      "name": "settings access",
+      "code": "settings:access",
+      "tabs": [
+        "settings"
+      ],
+      "tab": "settings",
+      "action": "manage",
+      "createdAt": "2026-03-11T06:37:43.925Z",
+      "updatedAt": "2026-03-11T06:37:43.925Z"
+    },
+    {
+      "id": "1feef4b9-6496-454e-80c4-922e9eb36822",
+      "name": "Reservations",
+      "code": "reservation:access",
+      "tabs": [
+        "rooms",
+        "dining",
+        "contact-submissions"
+      ],
+      "tab": "rooms",
+      "action": "manage",
+      "description": "",
+      "createdAt": "2026-03-11T06:49:19.897Z",
+      "updatedAt": "2026-03-11T06:49:19.898Z"
+    },
+    {
+      "id": "fdaa8147-1ed4-4927-afd7-a4927694a5e3",
+      "name": "Managment",
+      "code": "management:access",
+      "tabs": [
+        "room-types",
+        "manage-rooms",
+        "restaurants"
+      ],
+      "tab": "room-types",
+      "action": "manage",
+      "description": "",
+      "createdAt": "2026-03-11T06:49:45.381Z",
+      "updatedAt": "2026-03-11T06:49:45.381Z"
+    },
+    {
+      "id": "3bf105f1-319b-419b-a548-7c9b3422dfa3",
+      "name": "Landingpage",
+      "code": "landingpage:access",
+      "tabs": [
+        "hero",
+        "dining-highlights",
+        "contact",
+        "cms-amenities",
+        "about",
+        "signature-dishes",
+        "availability-content"
+      ],
+      "tab": "hero",
+      "action": "manage",
+      "description": "",
+      "createdAt": "2026-03-11T06:50:07.805Z",
+      "updatedAt": "2026-03-11T06:50:07.805Z"
+    },
+    {
+      "id": "d1f7c182-9f0e-40fe-adb9-1dfc555b627e",
+      "name": "System",
+      "code": "system:access",
+      "tabs": [
+        "site-settings",
+        "notifications",
+        "settings",
+        "navigation",
+        "section-headers"
+      ],
+      "tab": "site-settings",
+      "action": "manage",
+      "description": "",
+      "createdAt": "2026-03-11T06:50:26.181Z",
+      "updatedAt": "2026-03-11T06:50:26.181Z"
     }
   ],
   "roles": [
@@ -1485,7 +1678,7 @@
         "perm-settings-access"
       ],
       "createdAt": "2026-03-11T02:51:17.238Z",
-      "updatedAt": "2026-03-11T03:27:46.395Z"
+      "updatedAt": "2026-03-11T06:35:38.903Z"
     },
     {
       "id": "role-reservations-manager",
@@ -1498,8 +1691,8 @@
         "perm-contact-submissions-access",
         "perm-notifications-access"
       ],
-      "createdAt": "2026-03-11T02:51:17.238Z",
-      "updatedAt": "2026-03-11T03:29:33.406Z"
+      "createdAt": "2026-03-11T06:34:47.174Z",
+      "updatedAt": "2026-03-11T06:34:47.174Z"
     },
     {
       "id": "role-content-editor",
@@ -1521,8 +1714,8 @@
         "perm-navigation-access",
         "perm-section-headers-access"
       ],
-      "createdAt": "2026-03-11T02:51:17.238Z",
-      "updatedAt": "2026-03-11T03:29:29.774Z"
+      "createdAt": "2026-03-11T06:34:49.596Z",
+      "updatedAt": "2026-03-11T06:34:49.596Z"
     },
     {
       "id": "role-custom",
@@ -1530,8 +1723,52 @@
       "description": "Custom role template",
       "isSystem": true,
       "permissionIds": [],
-      "createdAt": "2026-03-11T02:51:17.238Z",
-      "updatedAt": "2026-03-11T03:27:46.395Z"
+      "createdAt": "2026-03-11T06:34:51.697Z",
+      "updatedAt": "2026-03-11T06:34:51.697Z"
+    },
+    {
+      "id": "b24eef3f-153d-48bd-88f9-a588d45e2c39",
+      "name": "Reservation Manager",
+      "description": "",
+      "isSystem": false,
+      "permissionIds": [
+        "1feef4b9-6496-454e-80c4-922e9eb36822"
+      ],
+      "createdAt": "2026-03-11T06:50:56.050Z",
+      "updatedAt": "2026-03-11T06:50:56.050Z"
+    },
+    {
+      "id": "1ddf5313-aff7-49a6-9561-5ce07f626eed",
+      "name": "Website Content Editor",
+      "description": "",
+      "isSystem": false,
+      "permissionIds": [
+        "3bf105f1-319b-419b-a548-7c9b3422dfa3"
+      ],
+      "createdAt": "2026-03-11T06:51:38.057Z",
+      "updatedAt": "2026-03-11T06:51:38.057Z"
+    },
+    {
+      "id": "107e1de7-5743-45f4-8950-467224ecc905",
+      "name": "Room and Restaurant Manager",
+      "description": "",
+      "isSystem": false,
+      "permissionIds": [
+        "fdaa8147-1ed4-4927-afd7-a4927694a5e3"
+      ],
+      "createdAt": "2026-03-11T06:52:28.093Z",
+      "updatedAt": "2026-03-11T06:52:28.093Z"
+    },
+    {
+      "id": "95e3634f-2344-4d0e-b0ab-84436fc0a6b5",
+      "name": "System Admin",
+      "description": "",
+      "isSystem": false,
+      "permissionIds": [
+        "d1f7c182-9f0e-40fe-adb9-1dfc555b627e"
+      ],
+      "createdAt": "2026-03-11T06:52:50.359Z",
+      "updatedAt": "2026-03-11T06:52:50.359Z"
     }
   ]
 }

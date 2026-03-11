@@ -25,11 +25,30 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     db.permissions[idx].code = code;
   }
 
-  if (typeof data.tab === 'string') {
+  if (typeof data.name === 'string') {
+    const name = data.name.trim();
+    if (!name) {
+      return NextResponse.json({ error: 'Permission name is required' }, { status: 400 });
+    }
+    db.permissions[idx].name = name;
+  }
+
+  if (Array.isArray(data.tabs)) {
+    const tabs = data.tabs
+      .filter((tab: unknown): tab is string => typeof tab === 'string' && tab.trim().length > 0)
+      .map((tab: string) => tab.trim());
+    if (tabs.length === 0) {
+      return NextResponse.json({ error: 'At least one tab is required' }, { status: 400 });
+    }
+    const uniqueTabs = [...new Set<string>(tabs)];
+    db.permissions[idx].tabs = uniqueTabs;
+    db.permissions[idx].tab = uniqueTabs[0];
+  } else if (typeof data.tab === 'string') {
     const tab = data.tab.trim();
     if (!tab) {
       return NextResponse.json({ error: 'Permission tab is required' }, { status: 400 });
     }
+    db.permissions[idx].tabs = [tab];
     db.permissions[idx].tab = tab;
   }
 
@@ -40,6 +59,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (typeof data.description === 'string') {
     db.permissions[idx].description = data.description.trim();
   }
+
+  db.permissions[idx].updatedAt = new Date().toISOString();
 
   writeDb(db);
   return NextResponse.json(db.permissions[idx]);
@@ -52,11 +73,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const exists = db.permissions.some((permission) => permission.id === id);
   if (!exists) {
     return NextResponse.json({ error: 'Permission not found' }, { status: 404 });
-  }
-
-  const isUsed = db.roles.some((role) => role.permissionIds.includes(id));
-  if (isUsed) {
-    return NextResponse.json({ error: 'Permission is still used by one or more roles' }, { status: 400 });
   }
 
   db.permissions = db.permissions.filter((permission) => permission.id !== id);

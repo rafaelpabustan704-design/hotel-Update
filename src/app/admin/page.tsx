@@ -219,6 +219,9 @@ export default function AdminPage() {
                 addRole={auth.addRole}
                 updateRole={auth.updateRole}
                 deleteRole={auth.deleteRole}
+                addPermission={auth.addPermission}
+                updatePermission={auth.updatePermission}
+                deletePermission={auth.deletePermission}
               />
             )}
           </div>

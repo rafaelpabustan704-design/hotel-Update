@@ -10,6 +10,7 @@ import type { AdminAccount } from '@/hooks/useAdminAuth';
 import type { Permission, Role } from '@/types/admin';
 import MiniPagination, { paginateArray } from '@/components/ui/MiniPagination';
 import { RoleBadge, RoleSelector, PermissionCheckboxes, RoleDescription } from '../_components/RoleComponents';
+import { TABS } from '../_config/tabs';
 import { cardCls, inputCls, labelCls, selectCls } from './shared';
 import ConfirmModal from './ConfirmModal';
 
@@ -24,6 +25,9 @@ interface SettingsTabProps {
   addRole: (data: { name: string; description?: string; permissionIds?: string[] }) => Promise<{ success: boolean; error?: string }>;
   updateRole: (id: string, data: { name?: string; description?: string; permissionIds?: string[] }) => Promise<{ success: boolean; error?: string }>;
   deleteRole: (id: string) => Promise<{ success: boolean; error?: string }>;
+  addPermission: (data: { name: string; tabs: string[]; action?: string; code?: string; description?: string }) => Promise<{ success: boolean; error?: string }>;
+  updatePermission: (id: string, data: { name?: string; tabs?: string[]; action?: string; code?: string; description?: string }) => Promise<{ success: boolean; error?: string }>;
+  deletePermission: (id: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 interface UserAccountFormModalProps {
@@ -51,11 +55,29 @@ interface RoleFormModalProps {
   title: string;
   name: string;
   description: string;
-  selectedTabs: string[];
+  permissions: Permission[];
+  selectedPermissionIds: string[];
   error: string;
   success: string;
   onClose: () => void;
   onNameChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onTogglePermission: (permissionId: string) => void;
+  onSubmit: () => Promise<void>;
+}
+
+interface PermissionFormModalProps {
+  open: boolean;
+  editingId: string | null;
+  name: string;
+  code: string;
+  description: string;
+  tabs: string[];
+  error: string;
+  success: string;
+  onClose: () => void;
+  onNameChange: (value: string) => void;
+  onCodeChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onTabsChange: (tabs: string[]) => void;
   onSubmit: () => Promise<void>;
@@ -153,13 +175,14 @@ function RoleFormModal({
   title,
   name,
   description,
-  selectedTabs,
+  permissions,
+  selectedPermissionIds,
   error,
   success,
   onClose,
   onNameChange,
   onDescriptionChange,
-  onTabsChange,
+  onTogglePermission,
   onSubmit,
 }: RoleFormModalProps) {
   if (!open) return null;
@@ -175,7 +198,7 @@ function RoleFormModal({
             </div>
             <div>
               <h3 className="font-semibold text-hotel-900 dark:text-white">{title}</h3>
-              <p className="text-xs text-hotel-500 dark:text-hotel-400">Configure role details and allowed tabs</p>
+              <p className="text-xs text-hotel-500 dark:text-hotel-400">Assign permissions to this role</p>
             </div>
           </div>
           <button
@@ -207,8 +230,38 @@ function RoleFormModal({
           </div>
 
           <div>
-            <label className={labelCls}>Allowed Tabs</label>
-            <PermissionCheckboxes selected={selectedTabs} onChange={onTabsChange} />
+            <label className={labelCls}>Permissions</label>
+            <div className="space-y-2 mt-3">
+              {permissions.map((permission) => {
+                const tabs = Array.isArray(permission.tabs) && permission.tabs.length > 0
+                  ? permission.tabs
+                  : (permission.tab ? [permission.tab] : []);
+                const tabLabels = tabs
+                  .map((tabId) => TABS.find((tab) => tab.id === tabId)?.label || tabId)
+                  .join(', ');
+                const checked = selectedPermissionIds.includes(permission.id);
+                return (
+                  <label
+                    key={permission.id}
+                    className={`flex items-start gap-2 rounded-xl border px-3 py-2.5 text-sm cursor-pointer transition-all ${checked
+                      ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-300 shadow-sm'
+                      : 'border-hotel-200 dark:border-dark-border text-hotel-500 dark:text-hotel-400 hover:border-hotel-300 dark:hover:border-hotel-600'
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onTogglePermission(permission.id)}
+                      className="mt-0.5"
+                    />
+                    <span className="flex-1">
+                      <span className="block text-xs font-semibold">{permission.name || permission.code}</span>
+                      <span className="block text-[11px] opacity-75">{tabLabels || 'No tabs configured'}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{error}</p>}
@@ -235,8 +288,90 @@ function RoleFormModal({
   );
 }
 
+function PermissionFormModal({
+  open,
+  editingId,
+  name,
+  code,
+  description,
+  tabs,
+  error,
+  success,
+  onClose,
+  onNameChange,
+  onCodeChange,
+  onDescriptionChange,
+  onTabsChange,
+  onSubmit,
+}: PermissionFormModalProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white dark:bg-dark-card border border-hotel-100 dark:border-dark-border shadow-2xl">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-hotel-100 dark:border-dark-border">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-hotel-900 dark:text-white">{editingId ? 'Edit Permission' : 'Create Permission'}</h3>
+              <p className="text-xs text-hotel-500 dark:text-hotel-400">Set permission details and allowed tabs</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-lg text-hotel-400 hover:bg-hotel-100 dark:hover:bg-hotel-800 hover:text-hotel-700 dark:hover:text-hotel-200 transition-colors" title="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <form
+          onSubmit={async (e) => { e.preventDefault(); await onSubmit(); }}
+          className="p-6 space-y-4 max-h-[75vh] overflow-auto"
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className={labelCls}>Permission Name</label>
+              <input value={name} onChange={(e) => onNameChange(e.target.value)} className={inputCls} placeholder="e.g. Front Desk Access" />
+            </div>
+            <div>
+              <label className={labelCls}>Permission Code</label>
+              <input value={code} onChange={(e) => onCodeChange(e.target.value)} className={inputCls} placeholder="e.g. frontdesk:access" />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Description</label>
+            <input value={description} onChange={(e) => onDescriptionChange(e.target.value)} className={inputCls} placeholder="Optional" />
+          </div>
+          <div>
+            <label className={labelCls}>Allowed Tabs for this Permission</label>
+            <PermissionCheckboxes selected={tabs} onChange={onTabsChange} />
+          </div>
+          {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{error}</p>}
+          {success && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0" />{success}</p>}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-2">
+            <button type="button" onClick={onClose} className="rounded-xl border border-hotel-200 dark:border-dark-border px-5 py-2.5 text-sm font-semibold text-hotel-600 dark:text-hotel-300 hover:bg-hotel-50 dark:hover:bg-hotel-800 transition-colors">Cancel</button>
+            <button type="submit" className="rounded-xl bg-gold-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]">Save Permission</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsTab({
-  currentUser, accounts, roles, permissions, addAccount, updateAccount, deleteAccount, addRole, updateRole, deleteRole,
+  currentUser,
+  accounts,
+  roles,
+  permissions,
+  addAccount,
+  updateAccount,
+  deleteAccount,
+  addRole,
+  updateRole,
+  deleteRole,
+  addPermission,
+  updatePermission,
+  deletePermission,
 }: SettingsTabProps) {
   const [newAdminForm, setNewAdminForm] = useState({ fullName: '', email: '', username: '', password: '' });
   const [newAdminRole, setNewAdminRole] = useState('Super Admin');
@@ -253,11 +388,23 @@ export default function SettingsTab({
   const [page, setPage] = useState(0);
   const [roleFormName, setRoleFormName] = useState('');
   const [roleFormDescription, setRoleFormDescription] = useState('');
-  const [roleFormTabs, setRoleFormTabs] = useState<string[]>([]);
+  const [roleFormPermissionIds, setRoleFormPermissionIds] = useState<string[]>([]);
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [roleFormError, setRoleFormError] = useState('');
   const [roleFormSuccess, setRoleFormSuccess] = useState('');
+  const [deleteRoleTarget, setDeleteRoleTarget] = useState<Role | null>(null);
+  const [permissionFormName, setPermissionFormName] = useState('');
+  const [permissionFormCode, setPermissionFormCode] = useState('');
+  const [permissionFormDescription, setPermissionFormDescription] = useState('');
+  const [permissionFormTabs, setPermissionFormTabs] = useState<string[]>([]);
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [editingPermissionId, setEditingPermissionId] = useState<string | null>(null);
+  const [permissionFormError, setPermissionFormError] = useState('');
+  const [permissionFormSuccess, setPermissionFormSuccess] = useState('');
+  const [deletePermissionTarget, setDeletePermissionTarget] = useState<Permission | null>(null);
+  const [rolePage, setRolePage] = useState(0);
+  const [permissionPage, setPermissionPage] = useState(0);
 
   const [accountQuery, setAccountQuery] = useState('');
   const [accountRoleFilter, setAccountRoleFilter] = useState<'All' | string>('All');
@@ -267,19 +414,6 @@ export default function SettingsTab({
     () => new Map(roles.map((role) => [role.name, role.id])),
     [roles],
   );
-  const permissionById = useMemo(
-    () => new Map(permissions.map((permission) => [permission.id, permission])),
-    [permissions],
-  );
-  const permissionIdByTab = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const permission of permissions) {
-      if (!map.has(permission.tab)) {
-        map.set(permission.tab, permission.id);
-      }
-    }
-    return map;
-  }, [permissions]);
 
   const filteredAccounts = useMemo(() => {
     const q = accountQuery.trim().toLowerCase();
@@ -303,7 +437,12 @@ export default function SettingsTab({
     if (page > maxPage) setPage(maxPage);
   }, [filteredAccounts.length, page]);
 
+  useEffect(() => { setRolePage(0); }, [roles.length]);
+  useEffect(() => { setPermissionPage(0); }, [permissions.length]);
+
   const { paged: paginatedAccounts, total: totalAccounts } = paginateArray(filteredAccounts, page);
+  const { paged: paginatedRoles, total: totalRoles } = paginateArray(roles, rolePage);
+  const { paged: paginatedPermissions, total: totalPermissions } = paginateArray(permissions, permissionPage);
   const isAccountsFiltered = accountQuery.trim() !== '' || accountRoleFilter !== 'All';
 
   const startEdit = (acc: AdminAccount) => {
@@ -361,7 +500,7 @@ export default function SettingsTab({
     setEditingRoleId(null);
     setRoleFormName('');
     setRoleFormDescription('');
-    setRoleFormTabs([]);
+    setRoleFormPermissionIds([]);
     setRoleFormError('');
     setRoleFormSuccess('');
     if (closeModal) setRoleModalOpen(false);
@@ -376,13 +515,18 @@ export default function SettingsTab({
     setEditingRoleId(role.id);
     setRoleFormName(role.name);
     setRoleFormDescription(role.description || '');
-    const tabs = role.permissionIds
-      .map((permissionId) => permissionById.get(permissionId)?.tab)
-      .filter((tab): tab is string => Boolean(tab));
-    setRoleFormTabs(tabs);
+    setRoleFormPermissionIds(role.permissionIds);
     setRoleFormError('');
     setRoleFormSuccess('');
     setRoleModalOpen(true);
+  };
+
+  const toggleRolePermission = (permissionId: string) => {
+    setRoleFormPermissionIds((prev) => (
+      prev.includes(permissionId)
+        ? prev.filter((id) => id !== permissionId)
+        : [...prev, permissionId]
+    ));
   };
 
   const saveRole = async () => {
@@ -392,9 +536,7 @@ export default function SettingsTab({
       setTimeout(() => setRoleFormError(''), 3000);
       return;
     }
-    const permissionIds = roleFormTabs
-      .map((tab) => permissionIdByTab.get(tab))
-      .filter((permissionId): permissionId is string => Boolean(permissionId));
+    const permissionIds = roleFormPermissionIds;
 
     const payload = { name, description: roleFormDescription.trim(), permissionIds };
     const result = editingRoleId
@@ -410,6 +552,80 @@ export default function SettingsTab({
     } else {
       setRoleFormError(result.error || 'Failed to save role');
       setTimeout(() => setRoleFormError(''), 3000);
+    }
+  };
+
+  const resetPermissionForm = (closeModal = false) => {
+    setEditingPermissionId(null);
+    setPermissionFormName('');
+    setPermissionFormCode('');
+    setPermissionFormDescription('');
+    setPermissionFormTabs([]);
+    setPermissionFormError('');
+    setPermissionFormSuccess('');
+    if (closeModal) setPermissionModalOpen(false);
+  };
+
+  const startCreatePermission = () => {
+    resetPermissionForm();
+    setPermissionModalOpen(true);
+  };
+
+  const beginEditPermission = (permission: Permission) => {
+    setEditingPermissionId(permission.id);
+    setPermissionFormName(permission.name || permission.code);
+    setPermissionFormCode(permission.code);
+    setPermissionFormDescription(permission.description || '');
+    setPermissionFormTabs(
+      Array.isArray(permission.tabs) && permission.tabs.length > 0
+        ? permission.tabs
+        : (permission.tab ? [permission.tab] : []),
+    );
+    setPermissionFormError('');
+    setPermissionFormSuccess('');
+    setPermissionModalOpen(true);
+  };
+
+  const savePermission = async () => {
+    const name = permissionFormName.trim();
+    const code = permissionFormCode.trim();
+    if (!name) {
+      setPermissionFormError('Permission name is required');
+      setTimeout(() => setPermissionFormError(''), 3000);
+      return;
+    }
+    if (!code) {
+      setPermissionFormError('Permission code is required');
+      setTimeout(() => setPermissionFormError(''), 3000);
+      return;
+    }
+    if (permissionFormTabs.length === 0) {
+      setPermissionFormError('Select at least one tab for this permission');
+      setTimeout(() => setPermissionFormError(''), 3000);
+      return;
+    }
+
+    const payload = {
+      name,
+      code,
+      description: permissionFormDescription.trim(),
+      tabs: permissionFormTabs,
+      action: 'manage' as const,
+    };
+
+    const result = editingPermissionId
+      ? await updatePermission(editingPermissionId, payload)
+      : await addPermission(payload);
+
+    if (result.success) {
+      setPermissionFormSuccess(editingPermissionId ? 'Permission updated successfully' : 'Permission created successfully');
+      setTimeout(() => {
+        setPermissionFormSuccess('');
+        resetPermissionForm(true);
+      }, 1200);
+    } else {
+      setPermissionFormError(result.error || 'Failed to save permission');
+      setTimeout(() => setPermissionFormError(''), 3000);
     }
   };
 
@@ -516,7 +732,7 @@ export default function SettingsTab({
                   >
                     {editUserOpen && editTarget?.id === account.id ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
                   </button>
-                  <button onClick={() => setDeleteTarget(account)} disabled={account.username === currentUser || accounts.length <= 1} className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${account.username === currentUser || accounts.length <= 1 ? 'text-hotel-200 dark:text-hotel-700 cursor-not-allowed' : 'text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'}`}><Trash2 className="h-4 w-4" /></button>
+                  <button onClick={() => setDeleteTarget(account)} className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
             </div>
@@ -607,9 +823,9 @@ export default function SettingsTab({
       <div className={`${cardCls} p-6`}>
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-hotel-900 dark:text-white">Roles & Permissions</h3>
+            <h3 className="font-semibold text-hotel-900 dark:text-white">Roles</h3>
             <p className="text-xs text-hotel-500 dark:text-hotel-400">
-              Create custom roles and assign tab permissions
+              Create roles, then assign multiple permissions per role
             </p>
           </div>
           <button
@@ -623,7 +839,7 @@ export default function SettingsTab({
         </div>
 
         <div className="mt-6 space-y-2">
-          {roles.map((role) => (
+          {paginatedRoles.map((role) => (
             <div key={role.id} className="rounded-xl border border-hotel-100 dark:border-dark-border p-3 flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -631,6 +847,7 @@ export default function SettingsTab({
                   {role.isSystem && <span className="text-[10px] font-semibold uppercase text-hotel-400">System</span>}
                 </div>
                 <p className="text-xs text-hotel-500 dark:text-hotel-400 mt-1">{role.description || 'No description'}</p>
+                <p className="text-[11px] text-hotel-400 mt-1">{role.permissionIds.length} permission(s) assigned</p>
               </div>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => beginEditRole(role)} className="flex h-8 w-8 items-center justify-center rounded-lg text-hotel-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500">
@@ -638,15 +855,8 @@ export default function SettingsTab({
                 </button>
                 <button
                   type="button"
-                  disabled={role.isSystem}
-                  onClick={async () => {
-                    const result = await deleteRole(role.id);
-                    if (!result.success) {
-                      setRoleFormError(result.error || 'Failed to delete role');
-                      setTimeout(() => setRoleFormError(''), 3000);
-                    }
-                  }}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg ${role.isSystem ? 'text-hotel-200 dark:text-hotel-700 cursor-not-allowed' : 'text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'}`}
+                  onClick={() => setDeleteRoleTarget(role)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -654,22 +864,136 @@ export default function SettingsTab({
             </div>
           ))}
         </div>
+        <MiniPagination
+          currentPage={rolePage}
+          totalItems={totalRoles}
+          onPageChange={setRolePage}
+          className="border-t border-hotel-100 dark:border-dark-border mt-4 pt-4"
+        />
         {roleFormError && <p className="mt-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{roleFormError}</p>}
       </div>
+
+      {deleteRoleTarget && (
+        <ConfirmModal
+          title="Delete Role"
+          message={`Are you sure you want to delete the role "${deleteRoleTarget.name}"? This action cannot be undone.`}
+          onConfirm={async () => {
+            const result = await deleteRole(deleteRoleTarget.id);
+            if (!result.success) {
+              setRoleFormError(result.error || 'Failed to delete role');
+              setTimeout(() => setRoleFormError(''), 3000);
+            }
+            setDeleteRoleTarget(null);
+          }}
+          onCancel={() => setDeleteRoleTarget(null)}
+        />
+      )}
+
+      <div className={`${cardCls} p-6`}>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-hotel-900 dark:text-white">Permissions</h3>
+            <p className="text-xs text-hotel-500 dark:text-hotel-400">
+              Define permissions and which tabs each permission can access
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={startCreatePermission}
+            className="inline-flex items-center gap-2 rounded-xl bg-gold-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-gold-600/25 transition-all hover:bg-gold-700 active:scale-[0.98]"
+          >
+            <Shield className="h-4 w-4" />
+            Add Permission
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {paginatedPermissions.map((permission) => {
+            const tabs = Array.isArray(permission.tabs) && permission.tabs.length > 0
+              ? permission.tabs
+              : (permission.tab ? [permission.tab] : []);
+            const tabLabels = tabs
+              .map((tabId) => TABS.find((tab) => tab.id === tabId)?.label || tabId)
+              .join(', ');
+            return (
+              <div key={permission.id} className="rounded-xl border border-hotel-100 dark:border-dark-border p-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-hotel-900 dark:text-white">{permission.name || permission.code}</p>
+                  <p className="text-xs text-hotel-500 dark:text-hotel-400">{permission.code}</p>
+                  <p className="text-[11px] text-hotel-400 mt-1">{tabLabels || 'No tabs configured'}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => beginEditPermission(permission)} className="flex h-8 w-8 items-center justify-center rounded-lg text-hotel-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500">
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeletePermissionTarget(permission)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-hotel-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <MiniPagination
+          currentPage={permissionPage}
+          totalItems={totalPermissions}
+          onPageChange={setPermissionPage}
+          className="border-t border-hotel-100 dark:border-dark-border mt-4 pt-4"
+        />
+        {permissionFormError && <p className="mt-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2 flex items-center gap-2"><XCircle className="h-4 w-4 shrink-0" />{permissionFormError}</p>}
+      </div>
+
+      {deletePermissionTarget && (
+        <ConfirmModal
+          title="Delete Permission"
+          message={`Are you sure you want to delete the permission "${deletePermissionTarget.name || deletePermissionTarget.code}"? This action cannot be undone.`}
+          onConfirm={async () => {
+            const result = await deletePermission(deletePermissionTarget.id);
+            if (!result.success) {
+              setPermissionFormError(result.error || 'Failed to delete permission');
+              setTimeout(() => setPermissionFormError(''), 3000);
+            }
+            setDeletePermissionTarget(null);
+          }}
+          onCancel={() => setDeletePermissionTarget(null)}
+        />
+      )}
 
       <RoleFormModal
         open={roleModalOpen}
         title={editingRoleId ? 'Edit Role' : 'Create Role'}
         name={roleFormName}
         description={roleFormDescription}
-        selectedTabs={roleFormTabs}
+        permissions={permissions}
+        selectedPermissionIds={roleFormPermissionIds}
         error={roleFormError}
         success={roleFormSuccess}
         onClose={() => resetRoleForm(true)}
         onNameChange={setRoleFormName}
         onDescriptionChange={setRoleFormDescription}
-        onTabsChange={setRoleFormTabs}
+        onTogglePermission={toggleRolePermission}
         onSubmit={saveRole}
+      />
+
+      <PermissionFormModal
+        open={permissionModalOpen}
+        editingId={editingPermissionId}
+        name={permissionFormName}
+        code={permissionFormCode}
+        description={permissionFormDescription}
+        tabs={permissionFormTabs}
+        error={permissionFormError}
+        success={permissionFormSuccess}
+        onClose={() => resetPermissionForm(true)}
+        onNameChange={setPermissionFormName}
+        onCodeChange={setPermissionFormCode}
+        onDescriptionChange={setPermissionFormDescription}
+        onTabsChange={setPermissionFormTabs}
+        onSubmit={savePermission}
       />
     </div>
   );

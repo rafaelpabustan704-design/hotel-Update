@@ -32,13 +32,22 @@ function permissionCode(tab: string): string {
   return `${tab}:access`;
 }
 
+function permissionTabs(permission: Permission): string[] {
+  if (Array.isArray(permission.tabs) && permission.tabs.length > 0) return permission.tabs;
+  if (typeof permission.tab === 'string' && permission.tab) return [permission.tab];
+  return [];
+}
+
 export function buildDefaultPermissions(nowIso: string): Permission[] {
   return ADMIN_TABS.map((tab) => ({
     id: permissionId(tab),
+    name: `${tab.replace(/-/g, ' ')} access`,
     code: permissionCode(tab),
+    tabs: [tab],
     tab,
     action: 'manage',
     createdAt: nowIso,
+    updatedAt: nowIso,
   }));
 }
 
@@ -99,8 +108,22 @@ export function ensureRbacCollections(db: DbWithRbac): { changed: boolean } {
     db.permissions = defaultPermissions;
     changed = true;
   } else {
+    for (const permission of db.permissions) {
+      const normalizedTabs = permissionTabs(permission);
+      if ((!Array.isArray(permission.tabs) || permission.tabs.length === 0) && normalizedTabs.length > 0) {
+        permission.tabs = normalizedTabs;
+        changed = true;
+      }
+      if (!permission.name) {
+        permission.name = permission.code || normalizedTabs.join(', ');
+        changed = true;
+      }
+    }
+
     for (const basePermission of defaultPermissions) {
-      const existing = db.permissions.find((permission) => permission.tab === basePermission.tab);
+      const existing = db.permissions.find(
+        (permission) => (permission.code || '').toLowerCase() === (basePermission.code || '').toLowerCase(),
+      );
       if (!existing) {
         db.permissions.push(basePermission);
         changed = true;
@@ -131,9 +154,13 @@ export function ensureRbacCollections(db: DbWithRbac): { changed: boolean } {
       }
     }
   }
-
   const roleByName = new Map((db.roles ?? []).map((role) => [role.name, role]));
-  const permissionByTab = new Map((db.permissions ?? []).map((permission) => [permission.tab, permission]));
+  const permissionByTab = new Map<string, Permission>();
+  for (const permission of db.permissions ?? []) {
+    for (const tab of permissionTabs(permission)) {
+      if (!permissionByTab.has(tab)) permissionByTab.set(tab, permission);
+    }
+  }
 
   for (const account of db.adminAccounts) {
     if (account.roleId && (db.roles ?? []).some((role) => role.id === account.roleId)) {
@@ -197,7 +224,10 @@ export function resolvePermissionTabs(db: DbWithRbac, account: AdminAccount): st
   if (!Array.isArray(db.permissions)) return [];
 
   const permissionMap = new Map(db.permissions.map((permission) => [permission.id, permission]));
-  return role.permissionIds
-    .map((permissionId) => permissionMap.get(permissionId)?.tab)
-    .filter((value): value is string => Boolean(value));
+  const allTabs = role.permissionIds
+    .flatMap((permissionId) => {
+      const permission = permissionMap.get(permissionId);
+      return permission ? permissionTabs(permission) : [];
+    });
+  return [...new Set(allTabs)];
 }

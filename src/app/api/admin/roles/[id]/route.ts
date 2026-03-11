@@ -54,10 +54,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ error: 'Role not found' }, { status: 404 });
   }
 
-  if (role.isSystem) {
-    return NextResponse.json({ error: 'System roles cannot be deleted' }, { status: 400 });
-  }
-
   const isRoleInUse = db.adminAccounts.some((account) => account.roleId === id);
   if (isRoleInUse) {
     return NextResponse.json({ error: 'Role is assigned to one or more users' }, { status: 400 });

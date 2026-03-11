@@ -4,11 +4,14 @@ export type AdminPermissionAction = 'read' | 'create' | 'update' | 'delete' | 'm
 
 export interface Permission {
   id: string;
+  name?: string;
   code: string;
-  tab: string;
+  tabs?: string[];
+  tab?: string; // legacy single-tab permission
   action: AdminPermissionAction;
   description?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Role {
