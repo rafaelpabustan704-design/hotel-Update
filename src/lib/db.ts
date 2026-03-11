@@ -5,8 +5,9 @@ import type {
   SiteSettings, NavigationItem, HeroContent, AboutContent,
   RestaurantItem, SignatureDish, DiningHighlight,
   AmenityItem, AvailabilityContent, ContactItem, ContactSubmission, SectionHeaders,
-  AdminAccount,
+  AdminAccount, Role, Permission,
 } from '@/types';
+import { ensureRbacCollections } from './admin-rbac';
 
 export interface DbSchema {
   reservations: Reservation[];
@@ -17,6 +18,8 @@ export interface DbSchema {
   roomTypes: RoomType[];
   settings: HotelSettings;
   adminAccounts: AdminAccount[];
+  roles: Role[];
+  permissions: Permission[];
   siteSettings: SiteSettings;
   navigation: NavigationItem[];
   heroContent: HeroContent;
@@ -36,7 +39,12 @@ const DB_PATH = join(process.cwd(), 'db.json');
 
 export function readDb(): DbSchema {
   const raw = readFileSync(DB_PATH, 'utf-8');
-  return JSON.parse(raw) as DbSchema;
+  const parsed = JSON.parse(raw) as DbSchema;
+  const { changed } = ensureRbacCollections(parsed);
+  if (changed) {
+    writeDb(parsed);
+  }
+  return parsed;
 }
 
 export function writeDb(data: DbSchema): void {

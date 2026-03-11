@@ -199,7 +199,28 @@ export default function AdminPage() {
             {adminTab === 'site-settings' && <SiteSettingsTab settings={lc.siteSettings} onSave={lc.updateSiteSettings} />}
             {adminTab === 'navigation' && <NavigationTab items={lc.navigation} onAdd={lc.addNavItem} onUpdate={lc.updateNavItem} onDelete={lc.deleteNavItem} onReorder={lc.updateNavigation} />}
             {adminTab === 'section-headers' && <SectionHeadersTab headers={lc.sectionHeaders} onSave={lc.updateSectionHeaders} />}
-            {adminTab === 'settings' && <SettingsTab currentUser={auth.currentUser} accounts={auth.accounts} addAccount={auth.addAccount} updateAccount={auth.updateAccount} deleteAccount={auth.deleteAccount} />}
+            {adminTab === 'notifications' && (
+              <div className="rounded-2xl border border-hotel-100 dark:border-dark-border bg-white dark:bg-dark-card p-6">
+                <h3 className="font-semibold text-hotel-900 dark:text-white">Notifications Access</h3>
+                <p className="text-sm text-hotel-500 dark:text-hotel-400 mt-1">
+                  This permission controls the notification center button in the sidebar.
+                </p>
+              </div>
+            )}
+            {adminTab === 'settings' && (
+              <SettingsTab
+                currentUser={auth.currentUser}
+                accounts={auth.accounts}
+                roles={auth.roles}
+                permissions={auth.permissions}
+                addAccount={auth.addAccount}
+                updateAccount={auth.updateAccount}
+                deleteAccount={auth.deleteAccount}
+                addRole={auth.addRole}
+                updateRole={auth.updateRole}
+                deleteRole={auth.deleteRole}
+              />
+            )}
           </div>
         </div>
 

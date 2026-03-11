@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readDb, writeDb } from '@/lib/db';
+import { resolvePermissionTabs, resolveRole } from '@/lib/admin-rbac';
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -50,14 +51,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     db.adminAccounts[idx].username = username;
   }
 
-  const validRoles = ['Super Admin', 'Reservations Manager', 'Content Editor', 'Custom'];
-  const nextRole = validRoles.includes(data.role) ? data.role : db.adminAccounts[idx].role;
-  db.adminAccounts[idx].role = nextRole;
-
-  if (nextRole === 'Custom' && Array.isArray(data.permissions)) {
-    db.adminAccounts[idx].permissions = data.permissions;
-  } else if (nextRole !== 'Custom') {
-    delete db.adminAccounts[idx].permissions;
+  if (typeof data.roleId === 'string') {
+    const roleExists = db.roles.some((role) => role.id === data.roleId);
+    if (!roleExists) {
+      return NextResponse.json({ error: 'Invalid role selected' }, { status: 400 });
+    }
+    db.adminAccounts[idx].roleId = data.roleId;
+  } else if (typeof data.role === 'string') {
+    const roleId = db.roles.find((role) => role.name === data.role)?.id;
+    if (!roleId) {
+      return NextResponse.json({ error: 'Invalid role selected' }, { status: 400 });
+    }
+    db.adminAccounts[idx].roleId = roleId;
   }
 
   if (typeof data.newPassword === 'string' && data.newPassword.length > 0) {
@@ -68,5 +73,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   writeDb(db);
-  return NextResponse.json(db.adminAccounts[idx]);
+  const account = db.adminAccounts[idx];
+  const role = resolveRole(db, account);
+  return NextResponse.json({
+    ...account,
+    roleId: role?.id ?? account.roleId ?? '',
+    role: role?.name ?? 'Super Admin',
+    permissions: resolvePermissionTabs(db, account),
+  });
 }

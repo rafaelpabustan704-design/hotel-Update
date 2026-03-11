@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Hotel, LogOut, X, ChevronLeft as PanelClose, Sun, Moon, Menu, Shield, Bell } from 'lucide-react';
 import { TABS, SECTION_LABELS, type AdminTab, type TabMeta } from '../_config/tabs';
-import type { AdminRole } from '@/types/admin';
 import { RoleBadge } from './RoleComponents';
 
 interface AdminSidebarProps {
@@ -18,7 +17,7 @@ interface AdminSidebarProps {
   toggleTheme: () => void;
   logout: () => void;
   currentUserName?: string | null;
-  currentUserRole?: AdminRole;
+  currentUserRole?: string;
   getCounts: (tab: AdminTab) => number | undefined;
   allowedTabs?: AdminTab[];
 }
@@ -30,6 +29,7 @@ export default function AdminSidebar({
   currentUserName, currentUserRole,
   getCounts, allowedTabs,
 }: AdminSidebarProps) {
+  const hasNotificationsAccess = !allowedTabs || allowedTabs.includes('notifications');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -147,7 +147,7 @@ export default function AdminSidebar({
 
   const sections = (['reservations', 'management', 'landing', 'system'] as const).map((section) => ({
     label: SECTION_LABELS[section],
-    tabs: TABS.filter((t) => t.section === section && (!allowedTabs || allowedTabs.includes(t.id))),
+    tabs: TABS.filter((t) => t.id !== 'notifications' && t.section === section && (!allowedTabs || allowedTabs.includes(t.id))),
   })).filter((section) => section.tabs.length > 0);
 
   return (
@@ -190,19 +190,21 @@ export default function AdminSidebar({
           </button>
 
           <div className="mt-1.5 space-y-1">
-            <button
-              ref={notificationBtnRef}
-              type="button"
-              onClick={toggleNotifications}
-              className={`relative w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-hotel-400 hover:text-white hover:bg-white/10 transition-all ${!sidebarOpen ? 'justify-center' : ''}`}
-              title="New activity"
-            >
-              <Bell className="h-5 w-5 shrink-0" />
-              {sidebarOpen && <span>Notifications</span>}
-              {hasUnread && (
-                <span className={`absolute h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_0_2px_rgba(15,23,42,1)] ${sidebarOpen ? 'right-3 top-1/2 -translate-y-1/2' : 'right-[22px] top-[9px]'}`} />
-              )}
-            </button>
+            {hasNotificationsAccess && (
+              <button
+                ref={notificationBtnRef}
+                type="button"
+                onClick={toggleNotifications}
+                className={`relative w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-hotel-400 hover:text-white hover:bg-white/10 transition-all ${!sidebarOpen ? 'justify-center' : ''}`}
+                title="New activity"
+              >
+                <Bell className="h-5 w-5 shrink-0" />
+                {sidebarOpen && <span>Notifications</span>}
+                {hasUnread && (
+                  <span className={`absolute h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_0_2px_rgba(15,23,42,1)] ${sidebarOpen ? 'right-3 top-1/2 -translate-y-1/2' : 'right-[22px] top-[9px]'}`} />
+                )}
+              </button>
+            )}
             <button
               ref={profileBtnRef}
               type="button"
@@ -217,7 +219,7 @@ export default function AdminSidebar({
             </button>
           </div>
 
-          {notificationsOpen && (
+          {hasNotificationsAccess && notificationsOpen && (
             <div ref={notificationPopupRef} className="absolute bottom-0 left-full ml-3 z-50 w-72 rounded-2xl border border-white/10 bg-[#0c1222] text-white shadow-2xl p-4 space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-hotel-300/80">

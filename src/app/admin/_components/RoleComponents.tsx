@@ -1,12 +1,11 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import type { AdminRole } from '@/types/admin';
 import { ROLES, ROLE_PERMISSIONS } from '@/app/admin/_config/permissions';
 import { TABS } from '@/app/admin/_config/tabs';
 
 /* ── Role colour map ── */
-export const ROLE_COLORS: Record<AdminRole, { bg: string; text: string }> = {
+export const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
     'Super Admin': { bg: 'bg-gold-50 dark:bg-gold-900/30', text: 'text-gold-700 dark:text-gold-400' },
     'Reservations Manager': { bg: 'bg-blue-50 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' },
     'Content Editor': { bg: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' },
@@ -14,7 +13,7 @@ export const ROLE_COLORS: Record<AdminRole, { bg: string; text: string }> = {
 };
 
 /* ── RoleBadge ── */
-export function RoleBadge({ role }: { role: AdminRole }) {
+export function RoleBadge({ role }: { role: string }) {
     const colors = ROLE_COLORS[role] || ROLE_COLORS['Super Admin'];
     return (
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${colors.bg} ${colors.text}`}>
@@ -24,15 +23,16 @@ export function RoleBadge({ role }: { role: AdminRole }) {
 }
 
 /* ── RoleSelector ── */
-export function RoleSelector({ value, onChange }: { value: AdminRole; onChange: (role: AdminRole) => void }) {
+export function RoleSelector({ value, roles, onChange }: { value: string; roles?: string[]; onChange: (role: string) => void }) {
+    const options = Array.isArray(roles) && roles.length > 0 ? roles : ROLES;
     return (
         <div className="relative">
             <select
                 value={value}
-                onChange={(e) => onChange(e.target.value as AdminRole)}
+                onChange={(e) => onChange(e.target.value)}
                 className="w-full rounded-xl border border-hotel-200 dark:border-dark-border bg-white dark:bg-dark-bg px-4 py-3 pr-10 text-sm text-hotel-900 dark:text-hotel-100 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-colors appearance-none cursor-pointer"
             >
-                {ROLES.map((role) => (
+                {options.map((role) => (
                     <option key={role} value={role}>{role}</option>
                 ))}
             </select>
@@ -90,10 +90,10 @@ export function PermissionCheckboxes({ selected, onChange }: { selected: string[
 }
 
 /* ── RoleDescription ── */
-export function RoleDescription({ role }: { role: AdminRole }) {
+export function RoleDescription({ role }: { role: string }) {
     if (role === 'Super Admin') return <p className="text-xs text-hotel-400 mt-1">Full access to all admin features</p>;
     if (role === 'Custom') return <p className="text-xs text-hotel-400 mt-1">Select specific tabs this account can access</p>;
-    const tabs = ROLE_PERMISSIONS[role];
+    const tabs = ROLE_PERMISSIONS[role] ?? [];
     const labels = tabs.map((id) => TABS.find((t) => t.id === id)?.label).filter(Boolean);
-    return <p className="text-xs text-hotel-400 mt-1">Access to: {labels.join(', ')}</p>;
+    return <p className="text-xs text-hotel-400 mt-1">{labels.length > 0 ? `Access to: ${labels.join(', ')}` : 'Customizable permissions'}</p>;
 }

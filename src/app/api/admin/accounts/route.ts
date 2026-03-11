@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
 import { readDb, writeDb } from '@/lib/db';
 import { randomUUID } from 'crypto';
+import { resolvePermissionTabs, resolveRole } from '@/lib/admin-rbac';
 
 export async function GET() {
   const db = readDb();
-  return NextResponse.json(db.adminAccounts);
+  return NextResponse.json(
+    db.adminAccounts.map((account) => {
+      const role = resolveRole(db, account);
+      const resolvedPermissions = resolvePermissionTabs(db, account);
+      return {
+        ...account,
+        roleId: role?.id ?? account.roleId ?? '',
+        role: role?.name ?? account.role ?? 'Super Admin',
+        permissions: resolvedPermissions,
+      };
+    }),
+  );
 }
 
 export async function POST(request: Request) {
@@ -24,8 +36,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Full name is required' }, { status: 400 });
   }
 
-  const validRoles = ['Super Admin', 'Reservations Manager', 'Content Editor', 'Custom'];
-  const role = validRoles.includes(data.role) ? data.role : 'Super Admin';
+  let roleId = typeof data.roleId === 'string' ? data.roleId : '';
+  if (!roleId && typeof data.role === 'string') {
+    roleId = db.roles.find((role) => role.name === data.role)?.id ?? '';
+  }
+  if (!roleId) {
+    roleId = db.roles.find((role) => role.name === 'Super Admin')?.id ?? '';
+  }
+
+  if (!db.roles.some((role) => role.id === roleId)) {
+    return NextResponse.json({ error: 'Invalid role selected' }, { status: 400 });
+  }
 
   const account = {
     id: randomUUID(),
@@ -33,12 +54,17 @@ export async function POST(request: Request) {
     email: String(data.email ?? '').trim(),
     username: String(data.username),
     password: String(data.password),
-    role,
-    permissions: role === 'Custom' && Array.isArray(data.permissions) ? data.permissions : undefined,
+    roleId,
     createdAt: new Date().toISOString(),
   };
 
   db.adminAccounts.push(account);
   writeDb(db);
-  return NextResponse.json(account, { status: 201 });
+  const role = resolveRole(db, account);
+  return NextResponse.json({
+    ...account,
+    roleId: role?.id ?? account.roleId ?? '',
+    role: role?.name ?? 'Super Admin',
+    permissions: resolvePermissionTabs(db, account),
+  }, { status: 201 });
 }

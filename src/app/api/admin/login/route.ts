@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readDb } from '@/lib/db';
+import { resolvePermissionTabs, resolveRole } from '@/lib/admin-rbac';
 
 export async function POST(request: Request) {
   const { username, password } = await request.json();
@@ -10,7 +11,14 @@ export async function POST(request: Request) {
   );
 
   if (match) {
-    return NextResponse.json({ success: true, username: match.username, role: match.role || 'Super Admin', permissions: match.permissions || [] });
+    const role = resolveRole(db, match);
+    return NextResponse.json({
+      success: true,
+      username: match.username,
+      roleId: role?.id ?? match.roleId ?? '',
+      role: role?.name ?? match.role ?? 'Super Admin',
+      permissions: resolvePermissionTabs(db, match),
+    });
   }
 
   return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });

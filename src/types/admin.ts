@@ -1,4 +1,25 @@
-export type AdminRole = 'Super Admin' | 'Reservations Manager' | 'Content Editor' | 'Custom';
+export type AdminRole = string;
+
+export type AdminPermissionAction = 'read' | 'create' | 'update' | 'delete' | 'manage';
+
+export interface Permission {
+  id: string;
+  code: string;
+  tab: string;
+  action: AdminPermissionAction;
+  description?: string;
+  createdAt: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  isSystem?: boolean;
+  permissionIds: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export interface AdminAccount {
   id: string;
@@ -6,7 +27,8 @@ export interface AdminAccount {
   email: string;
   username: string;
   password: string;
-  role: AdminRole;
+  roleId?: string;
+  role?: AdminRole; // legacy fallback for older db.json
   permissions?: string[];
   createdAt: string;
 }

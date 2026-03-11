@@ -1,7 +1,7 @@
 import {
   BedDouble, UtensilsCrossed, Layers, DoorOpen,
   Sparkles, Image, ChefHat, Flame, CalendarDays,
-  Phone, Palette, Navigation, Globe, Users, Settings, MessageSquare,
+  Phone, Palette, Navigation, Globe, Users, Settings, MessageSquare, Bell,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -10,7 +10,7 @@ export type AdminTab =
   | 'room-types' | 'manage-rooms'
   | 'hero' | 'about' | 'restaurants' | 'signature-dishes'
   | 'dining-highlights' | 'cms-amenities' | 'availability-content' | 'contact'
-  | 'site-settings' | 'navigation' | 'section-headers' | 'settings';
+  | 'site-settings' | 'navigation' | 'section-headers' | 'settings' | 'notifications';
 
 export interface TabMeta {
   id: AdminTab;
@@ -41,6 +41,7 @@ export const TABS: TabMeta[] = [
   { id: 'site-settings', label: 'Site Settings', title: 'Site Settings', description: 'Site name, logo, footer, and theme colors', icon: Palette, section: 'system' },
   { id: 'navigation', label: 'Navigation', title: 'Navigation Menu', description: 'Configure the navigation menu items', icon: Navigation, section: 'system' },
   { id: 'section-headers', label: 'Section Headers', title: 'Section Headers', description: 'Edit section labels, titles, and descriptions', icon: Globe, section: 'system' },
+  { id: 'notifications', label: 'Notifications', title: 'Notifications', description: 'View reservation and inquiry activity alerts', icon: Bell, section: 'system' },
   { id: 'settings', label: 'Users', title: 'Users', description: 'Manage users', icon: Users, section: 'system' },
 ];
 
